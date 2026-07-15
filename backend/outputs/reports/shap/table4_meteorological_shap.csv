@@ -1,0 +1,5 @@
+Rank,Variable,Mean|SHAP|,Mean_SHAP_signed,Sector1_SHAP,Sector62_SHAP,Environmental Role
+1,Wind Speed,206.4904,-145.1072,193.1629,219.7934,Higher wind disperses pollutants; low wind days see AQI buildup. Negative SHAP effect.
+2,Temperature,33.741,23.7172,31.5683,35.9096,Cold temperature → thermal inversions → traps pollutants near surface. Strongest meteo predictor (r=−0.90).
+3,Pressure,33.7231,23.6996,31.5524,35.8899,High pressure → stagnant air mass → pollutant accumulation. Positive SHAP in winter.
+4,Humidity,33.7196,23.6955,31.5455,35.8898,High humidity → hygroscopic PM2.5 growth + fog formation → AQI amplification.

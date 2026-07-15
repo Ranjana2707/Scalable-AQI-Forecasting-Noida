@@ -1,0 +1,6 @@
+{
+  "name": "Scalable AQI Forecasting & Explainable AI System",
+  "description": "A research-grade web dashboard for high-precision AQI forecasting with machine learning, deep learning, and SHAP explainability analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

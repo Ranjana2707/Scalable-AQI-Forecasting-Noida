@@ -1,0 +1,13 @@
+Model,Station,RMSE,MAE,MAPE,R2
+Linear Regression,Sector-1,12.732,9.703,5.919,0.9866
+Linear Regression,Sector-62,13.183,9.468,5.343,0.9851
+Ridge Regression,Sector-1,12.725,9.701,5.919,0.9866
+Ridge Regression,Sector-62,13.218,9.484,5.354,0.985
+Decision Tree,Sector-1,2.623,0.486,0.293,0.9994
+Decision Tree,Sector-62,1.356,0.359,0.272,0.9998
+Random Forest,Sector-1,7.468,5.077,2.682,0.9954
+Random Forest,Sector-62,8.976,5.285,3.019,0.9931
+Gradient Boosting,Sector-1,5.082,3.571,1.971,0.9979
+Gradient Boosting,Sector-62,5.488,3.636,2.059,0.9974
+Hist Gradient Boosting,Sector-1,1.841,0.915,0.549,0.9997
+Hist Gradient Boosting,Sector-62,1.13,0.745,0.464,0.9999

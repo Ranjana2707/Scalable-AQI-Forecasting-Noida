@@ -1,0 +1,119 @@
+station,feature,mean_abs_shap,mean_shap,category
+Sector-1,roll_mean_aqi_7,31.4412,25.1587,Rolling
+Sector-1,roll_mean_aqi_30,31.5687,25.2857,Rolling
+Sector-1,roll_std_aqi_7,31.5439,25.2601,Rolling
+Sector-1,roll_trend_aqi_7,31.5564,25.2738,Rolling
+Sector-1,roll_trend_aqi_30,31.55,25.2672,Rolling
+Sector-1,roll_aqi_momentum,31.557,25.2735,Rolling
+Sector-1,roll_episode_flag,31.5447,25.2619,Rolling
+Sector-1,roll_mean_pm25_7,31.4273,25.145,Rolling
+Sector-1,roll_mean_pm10_7,31.4756,25.1902,Rolling
+Sector-1,roll_std_pm25_7,193.1629,-154.6889,Rolling
+Sector-1,lag_aqi_1,31.5455,25.2625,Lag
+Sector-1,lag_aqi_7,31.5243,25.2417,Lag
+Sector-1,lag_aqi_14,31.5711,25.2882,Lag
+Sector-1,lag_aqi_30,193.1629,-154.6889,Lag
+Sector-1,lag_pm25_1,31.5481,25.2649,Lag
+Sector-1,lag_pm25_7,193.1629,-154.6889,Lag
+Sector-1,lag_pm10_1,31.571,25.2856,Lag
+Sector-1,lag_co_1,31.5273,25.2385,Lag
+Sector-1,lag_no2_1,31.5495,25.2665,Lag
+Sector-1,lag_temperature_1,31.5414,25.2585,Lag
+Sector-1,lag_wind_speed_1,31.5419,25.258,Lag
+Sector-1,pm25,99.6476,-64.175,Raw Pollutant/Meteo
+Sector-1,pm10,25.5057,19.2417,Raw Pollutant/Meteo
+Sector-1,co,31.5343,25.2522,Raw Pollutant/Meteo
+Sector-1,no2,31.5336,25.2571,Raw Pollutant/Meteo
+Sector-1,o3,31.5445,25.2617,Raw Pollutant/Meteo
+Sector-1,so2,31.543,25.2612,Raw Pollutant/Meteo
+Sector-1,nh3,31.5477,25.2659,Raw Pollutant/Meteo
+Sector-1,temperature,31.5683,25.2856,Raw Pollutant/Meteo
+Sector-1,humidity,31.5455,25.2625,Raw Pollutant/Meteo
+Sector-1,wind_speed,193.1629,-154.6889,Raw Pollutant/Meteo
+Sector-1,pressure,31.5524,25.2697,Raw Pollutant/Meteo
+Sector-1,sin_month,31.5414,25.2593,Cyclical
+Sector-1,cos_month,31.5447,25.2619,Cyclical
+Sector-1,sin_day_of_year,31.5519,25.2698,Cyclical
+Sector-1,cos_day_of_year,31.5311,25.2484,Cyclical
+Sector-1,sin_day_of_week,31.5479,25.2646,Cyclical
+Sector-1,cos_day_of_week,193.1629,-154.6889,Cyclical
+Sector-1,season_Winter,31.5414,25.2593,Season
+Sector-1,season_Monsoon,31.5458,25.2628,Season
+Sector-1,season_Summer,31.5467,25.2635,Season
+Sector-1,season_Spring,31.5414,25.2593,Season
+Sector-1,year,193.1629,-154.6889,Raw Pollutant/Meteo
+Sector-1,quarter,31.5414,25.2593,Raw Pollutant/Meteo
+Sector-1,is_weekend,31.5463,25.2633,Event
+Sector-1,is_covid_lockdown,31.5414,25.2593,Event
+Sector-1,is_diwali,31.5447,25.2619,Event
+Sector-1,is_stubble_burning,31.5463,25.2633,Event
+Sector-1,aqi_saturated,31.364,25.1172,Raw Pollutant/Meteo
+Sector-1,station_encoded,193.1629,-154.6889,Station
+Sector-1,station_season_mean_winter,31.5414,25.2593,Station
+Sector-1,interact_pm25_humidity,31.4907,25.2182,Interaction
+Sector-1,interact_pm25_pm10_ratio,31.8056,25.5557,Interaction
+Sector-1,interact_co_pm25,193.1629,-154.6889,Interaction
+Sector-1,interact_pm10_wind_accum,31.5366,25.2536,Interaction
+Sector-1,interact_temp_o3,31.544,25.2619,Interaction
+Sector-1,interact_lag_aqi1_winter,31.5421,25.26,Interaction
+Sector-1,interact_wind_speed_sq,31.5463,25.2633,Interaction
+Sector-1,interact_pm25_stubble,31.5458,25.2628,Interaction
+Sector-62,roll_mean_aqi_7,35.8013,22.0435,Rolling
+Sector-62,roll_mean_aqi_30,35.9133,22.1567,Rolling
+Sector-62,roll_std_aqi_7,35.8863,22.1293,Rolling
+Sector-62,roll_trend_aqi_7,35.8985,22.1432,Rolling
+Sector-62,roll_trend_aqi_30,35.8942,22.1357,Rolling
+Sector-62,roll_aqi_momentum,35.8967,22.1458,Rolling
+Sector-62,roll_episode_flag,35.8891,22.1311,Rolling
+Sector-62,roll_mean_pm25_7,35.7807,22.0248,Rolling
+Sector-62,roll_mean_pm10_7,35.8271,22.063,Rolling
+Sector-62,roll_std_pm25_7,219.7934,-135.5431,Rolling
+Sector-62,lag_aqi_1,35.8904,22.1302,Lag
+Sector-62,lag_aqi_7,35.8736,22.1149,Lag
+Sector-62,lag_aqi_14,35.9152,22.1575,Lag
+Sector-62,lag_aqi_30,219.7934,-135.5431,Lag
+Sector-62,lag_pm25_1,35.8919,22.133,Lag
+Sector-62,lag_pm25_7,219.7934,-135.5431,Lag
+Sector-62,lag_pm10_1,35.9173,22.1553,Lag
+Sector-62,lag_co_1,35.8735,22.1074,Lag
+Sector-62,lag_no2_1,35.897,22.1375,Lag
+Sector-62,lag_temperature_1,35.8859,22.1275,Lag
+Sector-62,lag_wind_speed_1,35.8886,22.1277,Lag
+Sector-62,pm25,103.534,-64.9293,Raw Pollutant/Meteo
+Sector-62,pm10,29.3479,15.6502,Raw Pollutant/Meteo
+Sector-62,co,35.8885,22.1318,Raw Pollutant/Meteo
+Sector-62,no2,35.8738,22.1327,Raw Pollutant/Meteo
+Sector-62,o3,35.8885,22.1301,Raw Pollutant/Meteo
+Sector-62,so2,35.8871,22.1316,Raw Pollutant/Meteo
+Sector-62,nh3,35.8863,22.136,Raw Pollutant/Meteo
+Sector-62,temperature,35.9096,22.1516,Raw Pollutant/Meteo
+Sector-62,humidity,35.8898,22.1314,Raw Pollutant/Meteo
+Sector-62,wind_speed,219.7934,-135.5431,Raw Pollutant/Meteo
+Sector-62,pressure,35.8899,22.1323,Raw Pollutant/Meteo
+Sector-62,sin_month,35.8853,22.1288,Cyclical
+Sector-62,cos_month,35.8891,22.1311,Cyclical
+Sector-62,sin_day_of_year,35.8937,22.1371,Cyclical
+Sector-62,cos_day_of_year,35.874,22.1171,Cyclical
+Sector-62,sin_day_of_week,35.8923,22.1331,Cyclical
+Sector-62,cos_day_of_week,219.7934,-135.5431,Cyclical
+Sector-62,season_Winter,35.8853,22.1288,Season
+Sector-62,season_Monsoon,35.8904,22.1319,Season
+Sector-62,season_Summer,35.8914,22.1325,Season
+Sector-62,season_Spring,35.8853,22.1288,Season
+Sector-62,year,219.7934,-135.5431,Raw Pollutant/Meteo
+Sector-62,quarter,35.8853,22.1288,Raw Pollutant/Meteo
+Sector-62,is_weekend,35.891,22.1323,Event
+Sector-62,is_covid_lockdown,35.8853,22.1288,Event
+Sector-62,is_diwali,35.8891,22.1311,Event
+Sector-62,is_stubble_burning,35.891,22.1323,Event
+Sector-62,aqi_saturated,35.6835,22.0044,Raw Pollutant/Meteo
+Sector-62,station_encoded,219.7934,-135.5431,Station
+Sector-62,station_season_mean_winter,35.8853,22.1288,Station
+Sector-62,interact_pm25_humidity,35.8575,22.1168,Interaction
+Sector-62,interact_pm25_pm10_ratio,36.014,22.3973,Interaction
+Sector-62,interact_co_pm25,219.7934,-135.5431,Interaction
+Sector-62,interact_pm10_wind_accum,35.8584,22.0999,Interaction
+Sector-62,interact_temp_o3,35.8852,22.1287,Interaction
+Sector-62,interact_lag_aqi1_winter,35.8853,22.1288,Interaction
+Sector-62,interact_wind_speed_sq,35.891,22.1323,Interaction
+Sector-62,interact_pm25_stubble,35.8904,22.1319,Interaction

@@ -1,0 +1,8 @@
+Rank,Pollutant,Mean|SHAP|,Sector1_SHAP,Sector62_SHAP,Environmental Role
+1,PM2.5,101.5926,99.6476,103.534,Fine particles (≤2.5µm); primary winter AQI driver. NAAQS limit: 60µg/m³ (24h).
+2,NH3,33.719,31.5477,35.8863,"Ammonia from agricultural sources (fertilisers, livestock); spikes post-harvest in Oct–Nov."
+3,O3,33.7185,31.5445,35.8885,Ground-level ozone peaks in summer; photochemical product of NOx + VOC + sunlight.
+4,SO2,33.7171,31.543,35.8871,Sulphur dioxide from coal combustion; weaker AQI driver in Noida vs mega-industrial zones.
+5,CO,33.7134,31.5343,35.8885,Carbon monoxide from vehicle exhaust and biomass burning; strong AQI co-predictor.
+6,NO2,33.7057,31.5336,35.8738,Nitrogen dioxide from traffic and power plants; indicator of urban combustion intensity.
+7,PM10,27.4285,25.5057,29.3479,Coarse particles (≤10µm); dominant in summer dust storms and post-monsoon stubble burning.

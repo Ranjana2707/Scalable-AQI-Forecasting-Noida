@@ -1,0 +1,9 @@
+# configs/colab.yaml — overrides for Google Colab environment
+paths:
+  raw_data:       "/content/drive/MyDrive/aqi_noida/data/raw/"
+  processed_data: "/content/drive/MyDrive/aqi_noida/data/processed/"
+  models:         "/content/drive/MyDrive/aqi_noida/outputs/models/"
+  mlflow_uri:     "/content/drive/MyDrive/aqi_noida/mlruns/"
+deep_learning:
+  batch_size: 64
+  epochs: 200

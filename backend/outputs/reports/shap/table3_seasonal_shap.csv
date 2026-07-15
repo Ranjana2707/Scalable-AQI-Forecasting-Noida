@@ -1,0 +1,13 @@
+Feature,Category,Winter,Spring,Summer,Monsoon,Post-Monsoon,Peak_Season
+pm25,Raw Pollutant/Meteo,36.0015,41.0095,190.4387,202.1286,80.7653,Monsoon
+interact_co_pm25,Interaction,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+lag_aqi_30,Lag,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+wind_speed,Raw Pollutant/Meteo,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+cos_day_of_week,Cyclical,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+lag_pm25_7,Lag,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+year,Raw Pollutant/Meteo,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+station_encoded,Station,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+roll_std_pm25_7,Rolling,118.8443,191.4775,252.2715,256.1564,449.2617,Post-Monsoon
+pm10,Raw Pollutant/Meteo,19.8202,30.653,27.7378,22.4106,72.3805,Post-Monsoon
+interact_pm25_pm10_ratio,Interaction,19.2859,31.2139,42.1744,42.237,72.6901,Post-Monsoon
+lag_aqi_14,Lag,19.4211,31.2709,41.2577,41.8688,73.3666,Post-Monsoon

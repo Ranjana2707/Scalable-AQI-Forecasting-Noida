@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML Models
+*.h5
+*.pkl
+*.joblib
+
+# Logs
+*.log
+
+# Build
+build/
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large datasets (ignore only if they are very large)
+*.zip

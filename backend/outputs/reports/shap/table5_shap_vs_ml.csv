@@ -1,0 +1,21 @@
+Feature,SHAP_Score,SHAP_Rank,ML_Importance,ML_Rank,Rank_Diff,Category,Agreement
+pm25,0.707091,1,0.120507501127491,2.0,1,Raw Pollutant/Meteo,Strong
+interact_co_pm25,0.502182,2,0.1205969862066819,1.0,1,Interaction,Strong
+lag_aqi_30,0.500032,3,0.0,0.0,3,Lag,Moderate
+wind_speed,0.50002,4,0.0,0.0,4,Raw Pollutant/Meteo,Moderate
+cos_day_of_week,0.50002,5,0.0,0.0,5,Cyclical,Moderate
+lag_pm25_7,0.500019,6,0.0395340531847039,10.0,4,Lag,Moderate
+year,0.500018,7,0.0,0.0,7,Raw Pollutant/Meteo,Weak
+station_encoded,0.500018,8,0.0,0.0,8,Station,Weak
+roll_std_pm25_7,0.500013,9,0.011819748243748,20.0,11,Rolling,Weak
+pm10,0.056305,10,0.0220138047332709,15.0,5,Raw Pollutant/Meteo,Moderate
+interact_pm25_pm10_ratio,0.022779,11,0.0029883807524705,25.0,14,Interaction,Weak
+lag_aqi_14,0.017856,12,0.0055639948081714,22.0,10,Lag,Weak
+roll_mean_aqi_30,0.017661,13,0.0168391316265376,18.0,5,Rolling,Moderate
+roll_trend_aqi_7,0.017654,14,0.0,0.0,14,Rolling,Weak
+lag_pm10_1,0.017641,15,0.017269196186025,17.0,2,Lag,Strong
+temperature,0.017637,16,0.0032442434750733,24.0,8,Raw Pollutant/Meteo,Weak
+roll_aqi_momentum,0.017622,17,0.0,0.0,17,Rolling,Weak
+sin_day_of_year,0.017601,18,0.0009810587374072,27.0,9,Cyclical,Weak
+roll_trend_aqi_30,0.017601,19,0.0008861429439514,28.0,9,Rolling,Weak
+lag_no2_1,0.0176,20,0.0,0.0,20,Lag,Weak

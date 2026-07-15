@@ -1,0 +1,25 @@
+# Dockerfile.gateway - Node API Gateway and static client host
+FROM node:22-slim
+
+WORKDIR /app
+
+# Copy dependency configs
+COPY package*.json ./
+
+# Install standard production dependencies
+RUN npm ci --omit=dev
+
+# Copy all compiled distribution and config files
+COPY . .
+
+# Rebuild Node modules if needed, build client React asset bundle
+RUN npm run build
+
+# Expose gateway port
+EXPOSE 3000
+
+# Set environment context
+ENV NODE_ENV=production
+ENV PORT=3000
+
+CMD ["node", "dist/server.cjs"]

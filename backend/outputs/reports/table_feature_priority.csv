@@ -1,0 +1,26 @@
+Rank,Category,Feature,Pearson r,Priority,Model,Justification
+1,Rolling,roll_mean_aqi_7,0.978,★★★★★,Both,7-day rolling mean captures weekly pollution regimes
+2,Rolling,roll_mean_aqi_14,0.972,★★★★★,Both,14-day trend for slow pollution build-up
+3,Lag,lag_aqi_1,0.966,★★★★★,ML,ACF lag-1=0.966; yesterday's AQI is the single best predictor
+4,Lag,lag_aqi_7,0.958,★★★★★,ML,Weekly seasonal autocorrelation
+5,Raw,pm25,0.950,★★★★★,Both,Primary AQI driver; r=0.95; dominant in winter
+6,Lag,lag_pm25_1,0.944,★★★★★,Both,PM2.5 lag-1; combustion source persistence
+7,Rolling,roll_mean_pm25_7,0.942,★★★★★,Both,Weekly PM2.5 trend
+8,Raw,pm10,0.933,★★★★☆,Both,Dominant in summer/dust season
+9,Rolling,roll_mean_aqi_30,0.942,★★★★☆,ML,"Monthly regime detection (monsoon onset, winter onset)"
+10,Raw,temperature,-0.898,★★★★★,Both,Strongest meteorological predictor; cold=high AQI (inversion)
+11,Lag,lag_temperature_1,-0.889,★★★★☆,Both,Temperature persistence; yesterday's cold predicts today's smog
+12,Raw,pressure,0.912,★★★★☆,Both,High pressure → stagnant air → pollutant accumulation
+13,Cyclical,sin_month / cos_month,0.72,★★★★☆,Both,Captures annual seasonality without Dec→Jan discontinuity
+14,Season OHE,season_Winter,0.727,★★★★☆,ML,Winter = 57% of Severe days; critical binary indicator
+15,Rolling,roll_trend_aqi_7,0.43,★★★★☆,Both,AQI direction of change — rising smog episode detection
+16,Station,station_mean_aqi,0.08,★★★☆☆,ML,Station baseline offset for multi-station models
+17,Interaction,interact_pm25_humidity,0.91,★★★★☆,Both,Hygroscopic growth: PM2.5 × humidity = effective optical mass
+18,Interaction,interact_lag_aqi1_winter,0.88,★★★★☆,ML,Winter AQI persistence: inversion traps pollutants
+19,Events,is_stubble_burning,0.31,★★★☆☆,Both,Oct–Nov: crop burning causes +200 AQI spikes
+20,Events,aqi_saturated,0.31,★★★☆☆,Both,81 ceiling-capped records; informs model of CPCB saturation
+21,Events,is_covid_lockdown,-0.19,★★★☆☆,Both,Structural break: 38% AQI drop during lockdown period
+22,Rolling,roll_aqi_momentum,0.18,★★★☆☆,Both,3-day vs 7-day divergence signals episode start/end
+23,Interaction,interact_pm25_pm10_ratio,0.45,★★★☆☆,ML,"Source fingerprint: >0.6 = combustion, <0.4 = dust"
+24,Station,station_encoded,0.08,★★★☆☆,Both,Enables shared multi-station model with station identity
+25,Cyclical,sin_day_of_year,0.71,★★★★☆,DL,Day-of-year cyclical; essential for LSTM annual periodicity

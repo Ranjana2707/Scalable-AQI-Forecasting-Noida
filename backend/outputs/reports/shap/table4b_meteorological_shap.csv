@@ -1,0 +1,5 @@
+Rank,Variable,Mean_SHAP,Mean_SHAP_signed,Sector1_SHAP,Sector62_SHAP,Environmental Role
+1,Wind Speed,206.4904,-145.1072,193.1629,219.7934,Higher wind disperses pollutants; negative SHAP effect; critical for episode break days.
+2,Temperature,33.741,23.7172,31.5683,35.9096,Temperature inversions trap pollutants at surface; strongest meteo predictor (r=−0.90 with AQI).
+3,Pressure,33.7231,23.6996,31.5524,35.8899,"High-pressure blocking events cause stagnant air, enabling pollutant accumulation."
+4,Humidity,33.7196,23.6955,31.5455,35.8898,High humidity amplifies PM2.5 via hygroscopic growth; also promotes fog-trapping of pollutants.

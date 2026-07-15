@@ -1,0 +1,26 @@
+# Dockerfile.backend - Noida AQI core python backend
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies (build-essential for scientific wheels)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install python libraries
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir flask flask-cors gunicorn
+
+# Copy all source files
+COPY . .
+
+# Expose python core API port
+EXPOSE 5000
+
+# Set production WSGI options
+ENV FLASK_ENV=production
+ENV PYTHONUNBUFFERED=1
+
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--threads", "2", "--timeout", "120", "server_api:app"]

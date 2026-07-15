@@ -1,0 +1,16 @@
+Feature,Category,Sector1_Mean_SHAP,Sector62_Mean_SHAP,Global_Mean_SHAP,Diff_S1_minus_S62,Dominant_Station
+pm25,Raw Pollutant/Meteo,99.6476,103.534,101.5926,-3.8864,Sector-62
+interact_co_pm25,Interaction,193.1629,219.7934,206.4904,-26.6305,Sector-62
+lag_aqi_30,Lag,193.1629,219.7934,206.4904,-26.6305,Sector-62
+wind_speed,Raw Pollutant/Meteo,193.1629,219.7934,206.4904,-26.6305,Sector-62
+cos_day_of_week,Cyclical,193.1629,219.7934,206.4904,-26.6305,Sector-62
+lag_pm25_7,Lag,193.1629,219.7934,206.4904,-26.6305,Sector-62
+year,Raw Pollutant/Meteo,193.1629,219.7934,206.4904,-26.6305,Sector-62
+station_encoded,Station,193.1629,219.7934,206.4904,-26.6305,Sector-62
+roll_std_pm25_7,Rolling,193.1629,219.7934,206.4904,-26.6305,Sector-62
+pm10,Raw Pollutant/Meteo,25.5057,29.3479,27.4285,-3.8422,Sector-62
+interact_pm25_pm10_ratio,Interaction,31.8056,36.014,33.9118,-4.2084,Sector-62
+lag_aqi_14,Lag,31.5711,35.9152,33.7452,-4.3441,Sector-62
+roll_mean_aqi_30,Rolling,31.5687,35.9133,33.743,-4.3446,Sector-62
+roll_trend_aqi_7,Rolling,31.5564,35.8985,33.7295,-4.3421,Sector-62
+lag_pm10_1,Lag,31.571,35.9173,33.7461,-4.3463,Sector-62

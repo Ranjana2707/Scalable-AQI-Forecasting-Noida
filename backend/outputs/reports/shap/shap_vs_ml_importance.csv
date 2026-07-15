@@ -1,0 +1,21 @@
+feature,fused_score,category,ml_importance,ml_norm
+pm25,0.707091,Raw Pollutant/Meteo,0.120507501127491,0.9993
+interact_co_pm25,0.502182,Interaction,0.1205969862066819,1.0
+lag_aqi_30,0.500032,Lag,0.0,0.0
+wind_speed,0.50002,Raw Pollutant/Meteo,0.0,0.0
+cos_day_of_week,0.50002,Cyclical,0.0,0.0
+lag_pm25_7,0.500019,Lag,0.0395340531847039,0.3278
+year,0.500018,Raw Pollutant/Meteo,0.0,0.0
+station_encoded,0.500018,Station,0.0,0.0
+roll_std_pm25_7,0.500013,Rolling,0.011819748243748,0.098
+pm10,0.056305,Raw Pollutant/Meteo,0.0220138047332709,0.1825
+interact_pm25_pm10_ratio,0.022779,Interaction,0.0029883807524705,0.0248
+lag_aqi_14,0.017856,Lag,0.0055639948081714,0.0461
+roll_mean_aqi_30,0.017661,Rolling,0.0168391316265376,0.1396
+roll_trend_aqi_7,0.017654,Rolling,0.0,0.0
+lag_pm10_1,0.017641,Lag,0.017269196186025,0.1432
+temperature,0.017637,Raw Pollutant/Meteo,0.0032442434750733,0.0269
+roll_aqi_momentum,0.017622,Rolling,0.0,0.0
+sin_day_of_year,0.017601,Cyclical,0.0009810587374072,0.0081
+roll_trend_aqi_30,0.017601,Rolling,0.0008861429439514,0.0073
+lag_no2_1,0.0176,Lag,0.0,0.0

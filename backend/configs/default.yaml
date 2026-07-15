@@ -1,0 +1,211 @@
+# ============================================================
+# configs/default.yaml  —  AQI Forecasting System (Noida)
+# UPDATED: Phase 2 Scope Expansion — Multi-Station (2015–2026)
+# ============================================================
+
+project:
+  name: "Multi-Station AQI Forecasting & XAI System — Noida"
+  version: "2.0.0"
+  seed: 42
+  # Multi-station: list of all active stations
+  stations:
+    - id: "noida_sector_1"
+      label: "Regional Office, Sector-1, Noida (UPPCB)"
+      type: "UPPCB_manual"
+    - id: "noida_sector_62"
+      label: "CAAQMS Station, Sector-62, Noida"
+      type: "CAAQMS_continuous"
+  # Default single station (used when running single-station pipeline)
+  station_id: "noida_sector_62"
+  log_level: "INFO"
+
+# ── Paths ────────────────────────────────────────────────────
+paths:
+  raw_data:       "data/raw/"
+  interim_data:   "data/interim/"
+  processed_data: "data/processed/"
+  external_data:  "data/external/"
+  models:         "outputs/models/"
+  figures:        "outputs/figures/"
+  reports:        "outputs/reports/"
+  predictions:    "outputs/predictions/"
+  logs:           "logs/"
+  mlflow_uri:     "mlruns/"
+  master_csv:     "data/raw/noida_aqi_master.csv"
+
+# ── Canonical Data Schema ────────────────────────────────────
+data:
+  datetime_col: "date"
+  target_col:   "aqi"
+  station_col:  "station"
+  # Columns confirmed present in both stations
+  pollutant_cols:
+    - "pm25"
+    - "pm10"
+    - "no2"
+    - "nh3"
+    - "so2"
+    - "co"
+    - "o3"
+    - "pb"
+  meteorological_cols:
+    - "temperature"
+    - "humidity"
+    - "wind_speed"
+    - "wind_direction"
+    - "pressure"
+  categorical_cols:
+    - "aqi_category"
+  # Station label encoding (used in model input)
+  station_encoding:
+    noida_sector_1:  0
+    noida_sector_62: 1
+  aqi_breakpoints:
+    good:         [0,   50]
+    satisfactory: [51,  100]
+    moderate:     [101, 200]
+    poor:         [201, 300]
+    very_poor:    [301, 400]
+    severe:       [401, 500]
+  # Data quality notes from inspection
+  quality_notes:
+    aqi_saturated_at_500:
+      noida_sector_1: 69   # primarily 2015–2019 winter months
+      noida_sector_62: 12  # primarily 2015–2018
+    date_coverage:
+      start: "2015-01-01"
+      end_sector_1:  "2026-06-26"
+      end_sector_62: "2026-06-27"
+      total_rows_sector_1:  4195
+      total_rows_sector_62: 4196
+      total_combined:       8391
+
+# ── Preprocessing ────────────────────────────────────────────
+preprocessing:
+  missing_strategy:     "interpolate"
+  interpolation_method: "time"
+  outlier_method:       "iqr"
+  outlier_threshold:    3.0
+  min_valid_data_pct:   0.70
+  # AQI=500 saturation treatment
+  aqi_saturation_strategy: "flag"   # flag | cap | drop | leave
+  aqi_saturation_flag_col: "aqi_saturated"
+  # Per-station processing
+  process_stations_independently: true
+
+# ── Train / Val / Test Split ─────────────────────────────────
+split:
+  strategy:   "time_series"
+  # Temporal split boundaries (fixed for reproducibility)
+  train_end:  "2023-12-31"   # ~9 years of training data
+  val_end:    "2024-12-31"   # 1 full year validation
+  # test = 2025-01-01 → 2026-06-27 (~18 months)
+  gap_days:   0              # daily data: no gap needed (no sub-daily leakage)
+  # Multi-station split: same boundaries applied to all stations
+
+# ── Feature Engineering ──────────────────────────────────────
+features:
+  # Lag features (days back)
+  lag_days:          [1, 2, 3, 7, 14, 30]
+  # Rolling window statistics (days)
+  rolling_windows:   [3, 7, 14, 30]
+  rolling_stats:     ["mean", "std", "min", "max"]
+  # Temporal encoding
+  cyclical_features: ["day_of_year", "month", "day_of_week"]
+  # Seasonal flags
+  seasons:
+    winter:  [11, 12, 1, 2]   # peak pollution
+    spring:  [3, 4]
+    summer:  [4, 5, 6]        # dust/ozone season
+    monsoon: [6, 7, 8, 9]     # AQI relief
+    post_monsoon: [10, 11]    # stubble burning
+  # Station features
+  include_station_encoding: true
+  include_station_interaction: true  # station × month interactions
+  # Special event flags
+  include_covid_flag: true
+  covid_period: ["2020-03-24", "2021-06-30"]
+  include_diwali_flag: true   # major pollution spike event
+
+# ── Baseline Models ──────────────────────────────────────────
+baseline_models:
+  persistence_baseline: true    # yesterday's AQI = today's prediction
+  linear_regression:    true
+  ridge:                true
+  random_forest:
+    n_estimators: 300
+    max_depth:    12
+    random_state: 42
+    n_jobs:      -1
+  xgboost:
+    n_estimators:          600
+    learning_rate:         0.05
+    max_depth:             6
+    subsample:             0.8
+    colsample_bytree:      0.8
+    early_stopping_rounds: 50
+    random_state:          42
+
+# ── Deep Learning ────────────────────────────────────────────
+deep_learning:
+  sequence_length:  30     # 30-day look-back (daily data)
+  forecast_horizon: 7      # 7-day ahead forecast
+  batch_size:       64
+  epochs:           150
+  patience:         20
+  lstm:
+    units:             [128, 64, 32]
+    dropout:           0.2
+    recurrent_dropout: 0.1
+  gru:
+    units:   [128, 64]
+    dropout: 0.2
+  transformer:
+    num_heads:  4
+    ff_dim:     128
+    num_layers: 3
+    dropout:    0.1
+
+# ── Explainability ───────────────────────────────────────────
+explainability:
+  shap_background_samples:  200
+  shap_test_samples:        365   # full year of test samples
+  lime_num_features:        12
+  generate_force_plots:     true
+  generate_summary_plots:   true
+  generate_dependence_plots: true
+  generate_station_comparison: true
+
+# ── Evaluation ───────────────────────────────────────────────
+evaluation:
+  primary_metric: "rmse"
+  metrics:        ["rmse", "mae", "mape", "r2", "smape"]
+  # Evaluate per station AND combined
+  evaluate_per_station: true
+  evaluate_combined:    true
+  # Compare against persistence baseline
+  compare_persistence:  true
+
+# ── MLflow ───────────────────────────────────────────────────
+mlflow:
+  experiment_name: "noida_aqi_multistation_forecasting"
+  run_tags:
+    project:      "AQI-XAI-Noida-MultiStation"
+    environment:  "development"
+    data_version: "2015-2026"
+
+# ── Dashboard ────────────────────────────────────────────────
+dashboard:
+  title:           "Noida AQI Multi-Station Forecasting Dashboard"
+  port:            8501
+  theme:           "light"
+  forecast_days:   7
+  historical_days: 365
+  stations_to_display: ["noida_sector_1", "noida_sector_62"]
+
+# ── Logging ──────────────────────────────────────────────────
+logging:
+  format:        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+  date_format:   "%Y-%m-%d %H:%M:%S"
+  file_rotation: "1 week"
+  retention:     "1 month"

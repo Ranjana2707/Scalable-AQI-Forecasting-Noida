@@ -1,0 +1,8 @@
+Rank,Pollutant,Mean_SHAP,Mean_SHAP_signed,Sector1_SHAP,Sector62_SHAP,Environmental Role
+1,PM2.5,101.5926,-64.5525,99.6476,103.534,Primary winter AQI driver; hygroscopic growth at high humidity. Mean SHAP highest Nov–Feb.
+2,NH3,33.719,23.6995,31.5477,35.8863,Agricultural ammonia; episodic spikes post-harvest Oct–Nov.
+3,O3,33.7185,23.6944,31.5445,35.8885,Photochemical summer pollutant; negative winter SHAP (inverse seasonal role).
+4,SO2,33.7171,23.6949,31.543,35.8871,Coal combustion product; weaker influence in Noida vs heavy-industrial zones.
+5,CO,33.7134,23.6905,31.5343,35.8885,Traffic/biomass combustion tracer; strong combustion co-predictor alongside PM2.5.
+6,NO2,33.7057,23.6935,31.5336,35.8738,"Urban traffic indicator; moderate AQI contribution, higher in Sector-1 commercial zone."
+7,PM10,27.4285,17.4443,25.5057,29.3479,Coarse dust; dominant Apr–Jun dust season and Oct stubble onset. Strong summer SHAP signal.

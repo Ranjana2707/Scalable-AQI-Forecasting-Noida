@@ -1,0 +1,40 @@
+services:
+  backend:
+    build:
+      context: ../aqi_noida_forecasting
+      dockerfile: Dockerfile.backend
+    container_name: noida-aqi-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: noida-aqi-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - PYTHON_API_URL=http://backend:5000
+      - JWT_SECRET=noida-aqi-secure-token-secret-key-2026
+      - ADMIN_USER=admin
+      - ADMIN_PASS=noida-aqi-secure-2026
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -1,0 +1,17 @@
+{
+  "n_features": 41,
+  "window_size": 14,
+  "horizon": 1,
+  "target_mean": 280.9600678384212,
+  "target_std": 120.26407413108272,
+  "epochs_max": 60,
+  "batch_size": 64,
+  "lr": 0.002,
+  "patience": 10,
+  "lstm_time_s": 14.0,
+  "gru_time_s": 10.3,
+  "cnnlstm_time_s": 13.3,
+  "lstm_best_epoch": 16,
+  "gru_best_epoch": 14,
+  "cnnlstm_best_epoch": 16
+}

@@ -1,0 +1,21 @@
+Rank,Feature,Category,Fused Score,Mean|SHAP|,Perm. Importance,Environmental Interpretation
+1,pm25,Raw Pollutant/Meteo,0.707091,101.5926,142.6451,Primary AQI driver Nov–Feb via thermal inversions; exceeds NAAQS 60µg/m³ on >200 days/year
+2,interact_co_pm25,Interaction,0.502182,206.4904,0.6174,Combustion co-occurrence fingerprint; peaks in winter when vehicles + residential heating co-emit CO and PM2.5
+3,lag_aqi_30,Lag,0.500032,206.4904,0.0039,—
+4,wind_speed,Raw Pollutant/Meteo,0.50002,206.4904,0.0005,—
+5,cos_day_of_week,Cyclical,0.50002,206.4904,0.0006,—
+6,lag_pm25_7,Lag,0.500019,206.4904,0.0002,Weekly PM2.5 cycle linked to traffic patterns and industrial operations
+7,year,Raw Pollutant/Meteo,0.500018,206.4904,0.0,Long-term trend proxy encoding −6.4 to −7.1 AQI/year improvement over 2015–2026
+8,station_encoded,Station,0.500018,206.4904,0.0,Captures systematic ~8 AQI offset between Sector-1 (commercial) and Sector-62 (residential)
+9,roll_std_pm25_7,Rolling,0.500013,206.4904,-0.0015,—
+10,pm10,Raw Pollutant/Meteo,0.056305,27.4285,16.0585,Coarse dust particles dominant in Apr–Jun dust storms and Oct stubble burning onset
+11,interact_pm25_pm10_ratio,Interaction,0.022779,33.9118,1.3286,—
+12,lag_aqi_14,Lag,0.017856,33.7452,0.0569,—
+13,roll_mean_aqi_30,Rolling,0.017661,33.743,0.003,—
+14,roll_trend_aqi_7,Rolling,0.017654,33.7295,0.0118,—
+15,lag_pm10_1,Lag,0.017641,33.7461,-0.0053,—
+16,temperature,Raw Pollutant/Meteo,0.017637,33.741,-0.0023,—
+17,roll_aqi_momentum,Rolling,0.017622,33.7289,0.003,—
+18,sin_day_of_year,Cyclical,0.017601,33.7248,0.0005,—
+19,roll_trend_aqi_30,Rolling,0.017601,33.7241,0.001,—
+20,lag_no2_1,Lag,0.0176,33.7253,-0.0003,—

@@ -1,0 +1,11 @@
+season,station,mean,std,min,max
+Monsoon,noida_sector_1,150.2,78.0,49.0,346.0
+Monsoon,noida_sector_62,143.2,71.9,56.0,333.0
+Post-Monsoon,noida_sector_1,321.3,37.5,151.0,422.0
+Post-Monsoon,noida_sector_62,312.3,40.0,180.0,398.0
+Spring,noida_sector_1,335.1,49.3,158.0,500.0
+Spring,noida_sector_62,330.3,42.2,149.0,461.0
+Summer,noida_sector_1,166.7,69.5,59.0,342.0
+Summer,noida_sector_62,167.0,68.7,61.0,331.0
+Winter,noida_sector_1,395.6,48.5,276.0,500.0
+Winter,noida_sector_62,381.2,40.6,279.0,500.0

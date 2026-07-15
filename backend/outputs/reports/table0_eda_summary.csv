@@ -1,0 +1,23 @@
+metric,value
+Total rows,8391
+Total stations,2
+Date range start,2015-01-01
+Date range end,2026-06-27
+AQI mean S1,280.1
+AQI mean S62,272.1
+AQI std S1,122.43
+AQI std S62,116.72
+AQI min S1,49.0
+AQI max S1,500.0
+AQI min S62,56.0
+AQI max S62,500.0
+AQI=500 records S1,69
+AQI=500 records S62,12
+ACF lag-1 S62,0.9664
+ACF lag-7 S62,0.958
+ACF lag-30 S62,0.8193
+Trend slope S1 (AQI/yr),-7.06
+Trend slope S62 (AQI/yr),-6.38
+COVID drop S62 (%),26.3
+PM25-AQI corr S62,0.949
+Temp-AQI corr S62,-0.8976

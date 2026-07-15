@@ -1,0 +1,9 @@
+Model,Split,RMSE,MAE,MAPE,R²,sMAPE,Train_time_s,Rank
+Hist Gradient Boosting,Test,1.53,0.83,0.51,0.9998,0.51,0.88,1
+Decision Tree (depth=15),Test,2.09,0.42,0.28,0.9996,0.28,0.16,2
+Gradient Boosting,Test,5.29,3.6,2.02,0.9976,2.0,3.81,3
+Random Forest,Test,8.26,5.18,2.85,0.9943,2.8,5.04,4
+Linear Regression,Test,12.96,9.59,5.63,0.9859,5.74,0.02,5
+Ridge (α=1.0),Test,12.97,9.59,5.64,0.9858,5.74,0.01,6
+Persistence lag-1,Test,29.5,20.07,9.54,0.9267,9.35,0.0,7
+Persistence lag-7,Test,33.35,23.3,11.55,0.9063,11.05,0.0,8

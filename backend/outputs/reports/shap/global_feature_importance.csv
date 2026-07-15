@@ -1,0 +1,60 @@
+feature,category,mean_abs_shap,perm_importance,fused_score,rank
+pm25,Raw Pollutant/Meteo,101.5926,142.6451,0.707091,1
+interact_co_pm25,Interaction,206.4904,0.6174,0.502182,2
+lag_aqi_30,Lag,206.4904,0.0039,0.500032,3
+wind_speed,Raw Pollutant/Meteo,206.4904,0.0005,0.50002,4
+cos_day_of_week,Cyclical,206.4904,0.0006,0.50002,5
+lag_pm25_7,Lag,206.4904,0.0002,0.500019,6
+year,Raw Pollutant/Meteo,206.4904,0.0,0.500018,7
+station_encoded,Station,206.4904,0.0,0.500018,8
+roll_std_pm25_7,Rolling,206.4904,-0.0015,0.500013,9
+pm10,Raw Pollutant/Meteo,27.4285,16.0585,0.056305,10
+interact_pm25_pm10_ratio,Interaction,33.9118,1.3286,0.022779,11
+lag_aqi_14,Lag,33.7452,0.0569,0.017856,12
+roll_mean_aqi_30,Rolling,33.743,0.003,0.017661,13
+roll_trend_aqi_7,Rolling,33.7295,0.0118,0.017654,14
+lag_pm10_1,Lag,33.7461,-0.0053,0.017641,15
+temperature,Raw Pollutant/Meteo,33.741,-0.0023,0.017637,16
+roll_aqi_momentum,Rolling,33.7289,0.003,0.017622,17
+sin_day_of_year,Cyclical,33.7248,0.0005,0.017601,18
+roll_trend_aqi_30,Rolling,33.7241,0.001,0.017601,19
+lag_no2_1,Lag,33.7253,-0.0003,0.0176,20
+pressure,Raw Pollutant/Meteo,33.7231,0.0007,0.017598,21
+lag_aqi_1,Lag,33.7199,0.0019,0.017593,22
+lag_pm25_1,Lag,33.722,0.0001,0.017592,23
+sin_day_of_week,Cyclical,33.7221,-0.0001,0.017592,24
+season_Summer,Season,33.721,0.0,0.017589,25
+co,Raw Pollutant/Meteo,33.7134,0.006,0.017589,26
+is_weekend,Event,33.7207,0.0,0.017588,27
+interact_wind_speed_sq,Interaction,33.7207,0.0,0.017588,28
+is_stubble_burning,Event,33.7207,0.0,0.017588,29
+season_Monsoon,Season,33.7201,0.0,0.017587,30
+humidity,Raw Pollutant/Meteo,33.7196,0.0006,0.017587,31
+interact_pm25_stubble,Interaction,33.7201,0.0,0.017587,32
+cos_month,Cyclical,33.7189,0.0,0.017583,33
+is_diwali,Event,33.7189,0.0,0.017583,34
+roll_episode_flag,Rolling,33.7189,0.0,0.017583,35
+o3,Raw Pollutant/Meteo,33.7185,-0.0002,0.017582,36
+nh3,Raw Pollutant/Meteo,33.719,-0.0013,0.017579,37
+so2,Raw Pollutant/Meteo,33.7171,-0.0006,0.017576,38
+interact_lag_aqi1_winter,Interaction,33.7157,0.0002,0.017575,39
+roll_std_aqi_7,Rolling,33.7171,-0.0012,0.017574,40
+quarter,Raw Pollutant/Meteo,33.7154,0.0,0.017574,41
+season_Winter,Season,33.7154,0.0,0.017573,42
+lag_temperature_1,Lag,33.7156,-0.0004,0.017573,43
+is_covid_lockdown,Event,33.7154,0.0,0.017573,44
+season_Spring,Season,33.7154,0.0,0.017573,45
+station_season_mean_winter,Station,33.7154,0.0,0.017573,46
+sin_month,Cyclical,33.7154,0.0,0.017573,47
+lag_wind_speed_1,Lag,33.7172,-0.0021,0.017571,48
+interact_temp_o3,Interaction,33.7166,-0.0017,0.017571,49
+cos_day_of_year,Cyclical,33.7045,0.0042,0.017558,50
+lag_co_1,Lag,33.7024,0.0014,0.017542,51
+interact_pm10_wind_accum,Interaction,33.6995,0.0032,0.01754,52
+lag_aqi_7,Lag,33.701,0.0018,0.017539,53
+no2,Raw Pollutant/Meteo,33.7057,-0.0026,0.017537,54
+interact_pm25_humidity,Interaction,33.6761,0.0054,0.017483,55
+roll_mean_pm10_7,Rolling,33.6533,0.0123,0.017443,56
+roll_mean_pm25_7,Rolling,33.606,0.0373,0.017399,57
+roll_mean_aqi_7,Rolling,33.6233,0.0132,0.017362,58
+aqi_saturated,Raw Pollutant/Meteo,33.5257,0.0,0.017044,59
