@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ../aqi_noida_forecasting
+      context: ./backend
       dockerfile: Dockerfile.backend
     container_name: noida-aqi-backend
     restart: unless-stopped
@@ -18,7 +18,7 @@ services:
 
   gateway:
     build:
-      context: .
+      context: ./gateway
       dockerfile: Dockerfile.gateway
     container_name: noida-aqi-gateway
     restart: unless-stopped

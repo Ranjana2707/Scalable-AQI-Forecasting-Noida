@@ -375,16 +375,22 @@ app.get("/api/health", async (req, res) => {
   try {
     const data = await callPythonApi("/api/health");
     res.json({
-      ...data,
+      status: "ok",
+      connected: true,
       aiEnabled: !!ai,
+      mlModelsLoaded: data.preloaded_estimators || [],
+      lastSync: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
       environment: process.env.NODE_ENV || "development",
     });
   } catch (err: any) {
     console.error("[GATEWAY HEALTH CHECK ERROR] Python offline:", err.message);
     res.json({
       status: "error",
+      connected: false,
       backend: "Express Node Gateway (Python offline)",
       aiEnabled: !!ai,
+      mlModelsLoaded: [],
+      lastSync: "Offline",
       environment: process.env.NODE_ENV || "development",
       error: "Could not establish handshake with Python Core.",
     });

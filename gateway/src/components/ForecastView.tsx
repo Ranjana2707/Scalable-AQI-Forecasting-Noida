@@ -36,16 +36,37 @@ export default function ForecastView({
   const [backendError, setBackendError] = useState(false);
 
   // Time & Date State Selection
-  const [selectedDate, setSelectedDate] = useState(() => {
+  const getLocalDatetimeStrings = () => {
     const d = new Date();
-    return d.toISOString().split("T")[0];
-  });
-  const [selectedTime, setSelectedTime] = useState(() => {
-    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-  });
+    return {
+      date: `${year}-${month}-${day}`,
+      time: `${hours}:${minutes}`
+    };
+  };
+
+  const [isLiveTime, setIsLiveTime] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(() => getLocalDatetimeStrings().date);
+  const [selectedTime, setSelectedTime] = useState(() => getLocalDatetimeStrings().time);
+
+  // Sync with real-time local clock dynamically
+  useEffect(() => {
+    if (!isLiveTime) return;
+    
+    const syncTime = () => {
+      const { date, time } = getLocalDatetimeStrings();
+      setSelectedDate(date);
+      setSelectedTime(time);
+    };
+
+    syncTime();
+    const interval = setInterval(syncTime, 10000); // Sync every 10 seconds
+    return () => clearInterval(interval);
+  }, [isLiveTime]);
   const [predictionHistory, setPredictionHistory] = useState<any[]>([
     { id: 1, timestamp: "2026-07-10 18:00", station: "Sector-62, Noida", predictedAqi: 210, category: "Poor", model: "HistGradientBoosting" },
     { id: 2, timestamp: "2026-07-10 12:00", station: "Sector-1, Noida", predictedAqi: 184, category: "Moderate", model: "HistGradientBoosting" }
@@ -87,8 +108,12 @@ export default function ForecastView({
         if (active) {
           if (data.predictedAqi !== undefined) {
             setPredictedAqi(data.predictedAqi);
-            setHistorical(data.historical);
-            setForecast(data.forecast);
+            if (data.historical && Array.isArray(data.historical)) {
+              setHistorical(data.historical);
+            }
+            if (data.forecast && Array.isArray(data.forecast)) {
+              setForecast(data.forecast);
+            }
 
             // Append to history log
             setPredictionHistory(prev => {
@@ -275,21 +300,45 @@ export default function ForecastView({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Date</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Date</label>
+            <button 
+              onClick={() => setIsLiveTime(!isLiveTime)}
+              className={`text-[8px] font-mono px-1.5 py-0.5 rounded border transition flex items-center gap-1 ${isLiveTime ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" : "bg-slate-800 text-slate-400 border-slate-700"}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${isLiveTime ? "bg-cyan-400 animate-pulse" : "bg-slate-500"}`} />
+              {isLiveTime ? "Live Clock" : "Manual"}
+            </button>
+          </div>
           <input
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => {
+              setSelectedDate(e.target.value);
+              setIsLiveTime(false);
+            }}
             className="w-full bg-[#0A0E14] text-white border border-white/10 rounded-lg px-3 py-2 text-xs font-mono focus:border-cyan-400 outline-none"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Time</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Time</label>
+            <button 
+              onClick={() => setIsLiveTime(!isLiveTime)}
+              className={`text-[8px] font-mono px-1.5 py-0.5 rounded border transition flex items-center gap-1 ${isLiveTime ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" : "bg-slate-800 text-slate-400 border-slate-700"}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${isLiveTime ? "bg-cyan-400 animate-pulse" : "bg-slate-500"}`} />
+              {isLiveTime ? "Live Clock" : "Manual"}
+            </button>
+          </div>
           <input
             type="time"
             value={selectedTime}
-            onChange={(e) => setSelectedTime(e.target.value)}
+            onChange={(e) => {
+              setSelectedTime(e.target.value);
+              setIsLiveTime(false);
+            }}
             className="w-full bg-[#0A0E14] text-white border border-white/10 rounded-lg px-3 py-2 text-xs font-mono focus:border-cyan-400 outline-none"
           />
         </div>

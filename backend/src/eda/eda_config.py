@@ -95,7 +95,8 @@ SEASON_COLORS = {
     "Post-Monsoon": "#8e44ad",
 }
 
-FIG_DIR = "/home/claude/aqi_noida_project/outputs/figures/eda"
+from pathlib import Path
+FIG_DIR = str(Path(__file__).resolve().parents[2] / "outputs/figures/eda")
 
 def save_fig(fig, name, tight=True):
     path = f"{FIG_DIR}/{name}.png"

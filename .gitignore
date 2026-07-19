@@ -29,3 +29,10 @@ Thumbs.db
 
 # Large datasets (ignore only if they are very large)
 *.zip
+
+# Node modules
+node_modules/
+
+# Python Virtual Environments
+.venv/
+venv/

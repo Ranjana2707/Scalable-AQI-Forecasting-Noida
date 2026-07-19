@@ -20,7 +20,9 @@ Persistence baselines (non-ML benchmarks)
 9.  Persistence lag-7          (AQI[t] = AQI[t-7])
 """
 import sys, time, warnings
-sys.path.insert(0, '/home/claude/aqi_noida_project')
+from pathlib import Path
+BASE = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(BASE))
 warnings.filterwarnings("ignore")
 
 import numpy as np
@@ -43,7 +45,6 @@ from sklearn.pipeline import Pipeline
 from src.models.metrics import evaluate_all, rmse, mae, mape, r2
 
 # ── Paths ────────────────────────────────────────────────────────────
-BASE       = Path('/home/claude/aqi_noida_project')
 MODEL_DIR  = BASE / 'outputs/models'
 FIG_DIR    = BASE / 'outputs/figures/models'
 REPORT_DIR = BASE / 'outputs/reports/models'

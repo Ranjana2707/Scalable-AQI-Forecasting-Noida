@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-BASE_DIR = Path("c:/Users/Ranjana Singh/OneDrive/Desktop/aqi_noida_forecasting")
+BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = BASE_DIR / "data"
 MODEL_DIR = BASE_DIR / "configs/models"
 LOGS_DIR = BASE_DIR / "logs"

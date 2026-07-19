@@ -1,0 +1,17 @@
+{
+  "name": "noida-aqi-forecasting-xai-root",
+  "version": "1.0.0",
+  "description": "Orchestrates Flask backend and Express/Vite gateway frontend for local dev",
+  "private": true,
+  "scripts": {
+    "install-gateway": "npm install --prefix gateway",
+    "install-root": "npm install",
+    "install-all": "npm run install-root && npm run install-gateway",
+    "dev": "concurrently --kill-others \"npm run dev --prefix gateway\" \"backend\\.venv\\Scripts\\python backend/server_api.py\"",
+    "docker-up": "docker-compose up --build",
+    "docker-down": "docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
