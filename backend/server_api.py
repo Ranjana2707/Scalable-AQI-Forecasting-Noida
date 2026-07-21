@@ -61,8 +61,6 @@ def legacy_predict():
 def legacy_forecast():
     import src.controllers.shap_controller as sc
     req_data = request.json or {}
-    pollutants = req_data.get("pollutants", {})
-    meteorology = req_data.get("meteorology", {})
     model_name = req_data.get("modelName", "HistGradientBoosting")
     station_id = req_data.get("stationId", "sec62")
     date_str = req_data.get("date", datetime.now().strftime("%Y-%m-%d"))
@@ -76,23 +74,9 @@ def legacy_forecast():
     res = predict_service.run_prediction(req_data)
     horizons = [1, 3, 6, 12, 24, 48, 72]
     res_list = []
-    for h in horizons:
-        h_payload = req_data.copy()
-        if h >= 24:
-            h_payload["pollutants"] = { "pm25": float(pollutants.get("pm25", 80)) * 0.95 }
-        h_res = predict_service.run_prediction(h_payload)
-        h_aqi = h_res["predictedAqi"]
-        
-        target_hour = (int(time_str.split(":")[0]) + h) % 24
-        diurnal_profile = 1.0
-        if 8 <= target_hour <= 10:
-            diurnal_profile = 1.15
-        elif 18 <= target_hour <= 21:
-            diurnal_profile = 1.25
-        elif 13 <= target_hour <= 15:
-            diurnal_profile = 0.85
-            
-        final_aqi = max(15.0, h_aqi * diurnal_profile)
+    
+    for idx, h in enumerate(horizons):
+        final_aqi = res["forecast"][idx]
         res_list.append({
             "horizon": f"+{h} hours" if h < 24 else f"+{h//24} days",
             "aqi": round(final_aqi, 2),
@@ -108,12 +92,17 @@ def legacy_forecast():
 @app.route("/api/stations-data", methods=["GET"])
 def legacy_stations_data():
     import src.controllers.shap_controller as sc
-    row = dataset_repo.get_closest_features(sc.last_active_station, pd.to_datetime(sc.last_active_date))
+    target_dt = pd.to_datetime(sc.last_active_date)
     
-    sec62_stats = { "pm25": float(row["pm25"]), "pm10": float(row["pm10"]), "no2": float(row["no2"]), "o3": float(row["o3"]), "co": float(row["co"]), "so2": float(row["so2"]), "peakHour": "18:00 - 21:00", "healthRisk": "High", "aqi": float(row["aqi"]), "temp": float(row["temperature"]), "wind": float(row["wind_speed"]), "hum": float(row["humidity"]), "mainPollutant": "PM2.5" }
-    sec125_stats = { "pm25": float(row["pm25"])*0.8, "pm10": float(row["pm10"])*0.75, "no2": float(row["no2"])*0.7, "o3": float(row["o3"])*1.2, "co": float(row["co"])*0.7, "so2": float(row["so2"])*0.6, "peakHour": "08:30 - 10:30", "healthRisk": "Moderate", "aqi": float(row["aqi"])*0.8, "temp": float(row["temperature"]), "wind": float(row["wind_speed"]), "hum": float(row["humidity"]), "mainPollutant": "O3" }
-    kp3_stats = { "pm25": float(row["pm25"])*0.68, "pm10": float(row["pm10"])*0.55, "no2": float(row["no2"])*0.4, "o3": float(row["o3"])*1.4, "co": float(row["co"])*0.4, "so2": float(row["so2"])*0.4, "peakHour": "13:00 - 15:00", "healthRisk": "Slight", "aqi": float(row["aqi"])*0.7, "temp": float(row["temperature"]), "wind": float(row["wind_speed"]), "hum": float(row["humidity"]), "mainPollutant": "O3" }
-    sec1_stats = { "pm25": float(row["pm25"])*0.9, "pm10": float(row["pm10"])*0.85, "no2": float(row["no2"])*0.8, "o3": float(row["o3"])*1.1, "co": float(row["co"])*0.8, "so2": float(row["so2"])*0.7, "peakHour": "17:30 - 20:00", "healthRisk": "High", "aqi": float(row["aqi"])*0.9, "temp": float(row["temperature"]), "wind": float(row["wind_speed"]), "hum": float(row["humidity"]), "mainPollutant": "PM2.5" }
+    row_62 = dataset_repo.get_closest_features("sec62", target_dt)
+    row_1 = dataset_repo.get_closest_features("sec1", target_dt)
+    row_125 = dataset_repo.get_closest_features("sec125", target_dt)
+    row_kp3 = dataset_repo.get_closest_features("kp3", target_dt)
+    
+    sec62_stats = { "pm25": float(row_62["pm25"]), "pm10": float(row_62["pm10"]), "no2": float(row_62["no2"]), "o3": float(row_62["o3"]), "co": float(row_62["co"]), "so2": float(row_62["so2"]), "peakHour": "18:00 - 21:00", "healthRisk": "High", "aqi": float(row_62["aqi"]), "temp": float(row_62["temperature"]), "wind": float(row_62["wind_speed"]), "hum": float(row_62["humidity"]), "mainPollutant": "PM2.5" }
+    sec125_stats = { "pm25": float(row_125["pm25"]), "pm10": float(row_125["pm10"]), "no2": float(row_125["no2"]), "o3": float(row_125["o3"]), "co": float(row_125["co"]), "so2": float(row_125["so2"]), "peakHour": "08:30 - 10:30", "healthRisk": "Moderate", "aqi": float(row_125["aqi"]), "temp": float(row_125["temperature"]), "wind": float(row_125["wind_speed"]), "hum": float(row_125["humidity"]), "mainPollutant": "O3" }
+    kp3_stats = { "pm25": float(row_kp3["pm25"]), "pm10": float(row_kp3["pm10"]), "no2": float(row_kp3["no2"]), "o3": float(row_kp3["o3"]), "co": float(row_kp3["co"]), "so2": float(row_kp3["so2"]), "peakHour": "13:00 - 15:00", "healthRisk": "Slight", "aqi": float(row_kp3["aqi"]), "temp": float(row_kp3["temperature"]), "wind": float(row_kp3["wind_speed"]), "hum": float(row_kp3["humidity"]), "mainPollutant": "O3" }
+    sec1_stats = { "pm25": float(row_1["pm25"]), "pm10": float(row_1["pm10"]), "no2": float(row_1["no2"]), "o3": float(row_1["o3"]), "co": float(row_1["co"]), "so2": float(row_1["so2"]), "peakHour": "17:30 - 20:00", "healthRisk": "High", "aqi": float(row_1["aqi"]), "temp": float(row_1["temperature"]), "wind": float(row_1["wind_speed"]), "hum": float(row_1["humidity"]), "mainPollutant": "PM2.5" }
     return jsonify({
         "sec62": sec62_stats,
         "sec125": sec125_stats,
@@ -123,33 +112,51 @@ def legacy_stations_data():
 
 @app.route("/api/historical-trends", methods=["GET"])
 def legacy_historical_trends():
+    import src.controllers.shap_controller as sc
     year = int(request.args.get("year", 2024))
     year_df = dataset_repo.master_df[dataset_repo.master_df["date"].dt.year == year]
     
+    weights = dataset_repo.get_station_weights(sc.last_active_station)
+    w_62 = weights["noida_sector_62"]
+    w_1 = weights["noida_sector_1"]
+    
     calendar_data = []
-    daily = year_df.groupby("date").mean(numeric_only=True).reset_index()
-    for idx, r in daily.iterrows():
+    daily_62 = year_df[year_df["station"] == "noida_sector_62"].groupby("date").mean(numeric_only=True).reset_index()
+    daily_1 = year_df[year_df["station"] == "noida_sector_1"].groupby("date").mean(numeric_only=True).reset_index()
+    
+    merged = pd.merge(daily_62, daily_1, on="date", suffixes=("_62", "_1"))
+    for idx, r in merged.iterrows():
         d = r["date"]
+        aqi_val = float(r["aqi_62"]) * w_62 + float(r["aqi_1"]) * w_1
         calendar_data.append({
             "date": d.strftime("%Y-%m-%d"),
             "dayOfWeek": d.weekday(),
             "month": d.month - 1,
-            "aqi": int(r["aqi"])
+            "aqi": int(aqi_val)
         })
         
     monthly_pattern = []
     sec62_master = dataset_repo.master_df[dataset_repo.master_df["station"] == "noida_sector_62"]
+    sec1_master = dataset_repo.master_df[dataset_repo.master_df["station"] == "noida_sector_1"]
     month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     
     for m in range(1, 13):
-        m_df = sec62_master[sec62_master["date"].dt.month == m]
+        m_df_62 = sec62_master[sec62_master["date"].dt.month == m]
+        m_df_1 = sec1_master[sec1_master["date"].dt.month == m]
+        
+        pm25_val = float(m_df_62["pm25"].mean()) * w_62 + float(m_df_1["pm25"].mean()) * w_1
+        pm10_val = float(m_df_62["pm10"].mean()) * w_62 + float(m_df_1["pm10"].mean()) * w_1
+        no2_val = float(m_df_62["no2"].mean()) * w_62 + float(m_df_1["no2"].mean()) * w_1
+        o3_val = float(m_df_62["o3"].mean()) * w_62 + float(m_df_1["o3"].mean()) * w_1
+        aqi_val = float(m_df_62["aqi"].mean()) * w_62 + float(m_df_1["aqi"].mean()) * w_1
+        
         monthly_pattern.append({
             "month": month_names[m-1],
-            "pm25": round(float(m_df["pm25"].mean()), 1),
-            "pm10": round(float(m_df["pm10"].mean()), 1),
-            "no2": round(float(m_df["no2"].mean()), 1),
-            "o3": round(float(m_df["o3"].mean()), 1),
-            "aqi": round(float(m_df["aqi"].mean()), 1)
+            "pm25": round(pm25_val, 1),
+            "pm10": round(pm10_val, 1),
+            "no2": round(no2_val, 1),
+            "o3": round(o3_val, 1),
+            "aqi": round(aqi_val, 1)
         })
         
     return jsonify({
@@ -175,6 +182,56 @@ def legacy_correlations():
         "features": ui_features,
         "matrix": [[float(x) for x in row] for row in expanded]
     })
+
+@app.route("/api/download/<plot_type>_plot", methods=["GET"])
+def download_shap_plot(plot_type):
+    import src.controllers.shap_controller as sc
+    import io
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    
+    req_data = {
+        "modelName": sc.last_active_model,
+        "stationId": sc.last_active_station,
+        "date": sc.last_active_date
+    }
+    res = shap_service.calculate_shap(req_data, sc.last_active_model, sc.last_active_station, sc.last_active_date)
+    
+    features = [f["name"] for f in res["features"]]
+    values = [f["value"] for f in res["features"]]
+    
+    fig, ax = plt.subplots(figsize=(6, 4))
+    
+    if plot_type == "waterfall":
+        cumulative = np.cumsum([res["baseValue"]] + values)
+        y_pos = np.arange(len(features))
+        colors = ['#ef4444' if x > 0 else '#3b82f6' for x in values]
+        ax.barh(y_pos, values, left=cumulative[:-1], color=colors)
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(features)
+        ax.set_title(f"SHAP Waterfall - {sc.last_active_model}")
+    elif plot_type == "beeswarm":
+        for idx, (feat, val) in enumerate(zip(features, values)):
+            jitter = np.random.normal(idx, 0.05, 10)
+            vals = val + np.random.normal(0, max(0.1, abs(val)*0.1), 10)
+            ax.scatter(vals, jitter, color='#eab308' if val > 0 else '#22c55e', alpha=0.6)
+        ax.set_yticks(np.arange(len(features)))
+        ax.set_yticklabels(features)
+        ax.set_title(f"SHAP Beeswarm - {sc.last_active_model}")
+    else:
+        y_pos = np.arange(len(features))
+        ax.barh(y_pos, np.abs(values), color='#10b981')
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(features)
+        ax.set_title(f"SHAP Summary - {sc.last_active_model}")
+        
+    plt.tight_layout()
+    img_buf = io.BytesIO()
+    fig.savefig(img_buf, format='png', dpi=150)
+    img_buf.seek(0)
+    plt.close(fig)
+    return send_file(img_buf, mimetype='image/png', as_attachment=True, download_name=f"{plot_type}_plot.png")
 
 @app.route("/api/shap", methods=["POST"])
 def legacy_shap():
@@ -324,11 +381,19 @@ def legacy_eda():
 @app.route("/api/map", methods=["GET"])
 def legacy_map():
     import src.controllers.shap_controller as sc
-    row = dataset_repo.get_closest_features(sc.last_active_station, pd.to_datetime(sc.last_active_date))
+    target_dt = pd.to_datetime(sc.last_active_date)
+    
+    row_62 = dataset_repo.get_closest_features("sec62", target_dt)
+    row_1 = dataset_repo.get_closest_features("sec1", target_dt)
+    row_125 = dataset_repo.get_closest_features("sec125", target_dt)
+    row_kp3 = dataset_repo.get_closest_features("kp3", target_dt)
+    
     return jsonify({
         "stations": [
-            { "id": "sec62", "lat": 28.6244, "lng": 77.3789, "aqi": float(row["aqi"]), "temp": float(row["temperature"]), "hum": float(row["humidity"]) },
-            { "id": "sec1", "lat": 28.5844, "lng": 77.3159, "aqi": float(row["aqi"]) * 0.95, "temp": float(row["temperature"]), "hum": float(row["humidity"]) }
+            { "id": "sec62", "lat": 28.6241, "lng": 77.3732, "aqi": float(row_62["aqi"]), "temp": float(row_62["temperature"]), "hum": float(row_62["humidity"]) },
+            { "id": "sec1", "lat": 28.5862, "lng": 77.3094, "aqi": float(row_1["aqi"]), "temp": float(row_1["temperature"]), "hum": float(row_1["humidity"]) },
+            { "id": "sec125", "lat": 28.5456, "lng": 77.3261, "aqi": float(row_125["aqi"]), "temp": float(row_125["temperature"]), "hum": float(row_125["humidity"]) },
+            { "id": "kp3", "lat": 28.4682, "lng": 77.4912, "aqi": float(row_kp3["aqi"]), "temp": float(row_kp3["temperature"]), "hum": float(row_kp3["humidity"]) }
         ]
     })
 
@@ -363,10 +428,12 @@ def legacy_models():
     return jsonify({
         "models": [
             { "name": "HistGradientBoosting", "type": "Gradient Boosting", "rmse": 1.527, "mae": 0.83, "r2": 0.9998, "status": "active" },
-            { "name": "DecisionTree", "type": "Decision Tree", "rmse": 2.087, "mae": 0.42, "r2": 0.9996, "status": "active" },
-            { "name": "LSTM Network", "rmse": 22.653, "mae": 15.854, "r2": 0.9564, "status": "active" },
-            { "name": "GRU Network", "rmse": 22.827, "mae": 16.484, "r2": 0.9557, "status": "active" },
-            { "name": "CNN-LSTM Hybrid", "rmse": 22.174, "mae": 15.603, "r2": 0.9582, "status": "active" }
+            { "name": "RandomForest", "type": "Random Forest", "rmse": 8.257, "mae": 5.181, "r2": 0.9943, "status": "active" },
+            { "name": "LightGBM", "type": "LightGBM", "rmse": 1.485, "mae": 0.81, "r2": 0.9998, "status": "active" },
+            { "name": "XGBoost", "type": "XGBoost", "rmse": 1.492, "mae": 0.82, "r2": 0.9998, "status": "active" },
+            { "name": "CNN-LSTM Hybrid", "type": "Deep Learning", "rmse": 22.174, "mae": 15.603, "r2": 0.9582, "status": "active" },
+            { "name": "LSTM Network", "type": "Deep Learning", "rmse": 22.653, "mae": 15.854, "r2": 0.9564, "status": "active" },
+            { "name": "GRU Network", "type": "Deep Learning", "rmse": 22.827, "mae": 16.484, "r2": 0.9557, "status": "active" }
         ]
     })
 
@@ -374,8 +441,10 @@ def legacy_models():
 def legacy_stations():
     return jsonify({
         "stations": [
-            { "id": "sec62", "name": "Noida Sector-62", "latitude": 28.6244, "longitude": 77.3789, "type": "Industrial / Residential" },
-            { "id": "sec1", "name": "Noida Sector-1", "latitude": 28.5844, "longitude": 77.3159, "type": "Commercial Density" }
+            { "id": "sec62", "name": "Sector-62, Noida", "latitude": 28.6241, "longitude": 77.3732, "type": "Industrial/Residential" },
+            { "id": "sec125", "name": "Sector-125, Noida", "latitude": 28.5456, "longitude": 77.3261, "type": "Institutional/Urban" },
+            { "id": "kp3", "name": "Knowledge Park III, Greater Noida", "latitude": 28.4682, "longitude": 77.4912, "type": "Educational/Sparsely Populated" },
+            { "id": "sec1", "name": "Sector-1, Noida", "latitude": 28.5862, "longitude": 77.3094, "type": "Commercial/Industrial Edge" }
         ]
     })
 

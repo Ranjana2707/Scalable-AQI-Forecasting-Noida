@@ -260,6 +260,40 @@ export default function ForecastView({
     return [...topPoints, ...bottomPoints].join(" ");
   };
 
+  // Helper to format Date + Time nicely
+  const formatOffsetDateTime = (baseDateStr: string, baseTimeStr: string, offsetHours: number) => {
+    try {
+      const parts = baseDateStr.split("-");
+      const timeParts = baseTimeStr.split(":");
+      if (parts.length !== 3 || timeParts.length < 2) return "";
+      
+      const d = new Date(
+        parseInt(parts[0], 10),
+        parseInt(parts[1], 10) - 1,
+        parseInt(parts[2], 10),
+        parseInt(timeParts[0], 10),
+        parseInt(timeParts[1], 10)
+      );
+      
+      if (isNaN(d.getTime())) return "";
+      d.setHours(d.getHours() + offsetHours);
+      
+      const day = d.getDate();
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const month = months[d.getMonth()];
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      
+      return `${day} ${month}, ${hours}:${minutes}`;
+    } catch (e) {
+      return "";
+    }
+  };
+
+  const pastLabel = formatOffsetDateTime(selectedDate, selectedTime, -168) || "7 Days Ago";
+  const nowLabel = formatOffsetDateTime(selectedDate, selectedTime, 0) || "T-0";
+  const futureLabel = formatOffsetDateTime(selectedDate, selectedTime, forecastHorizon) || `+${forecastHorizon}h`;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
@@ -658,7 +692,7 @@ export default function ForecastView({
             {/* Custom SVG Line Chart */}
             <div className="mt-4 bg-[#05070A]/80 border border-white/10 p-3 rounded-xl">
               <div className="flex justify-between text-[9px] text-slate-500 font-mono mb-2">
-                <span>PAST 24H</span>
+                <span>PAST 7 DAYS</span>
                 <span>FUTURE {forecastHorizon}H FORECAST</span>
               </div>
 
@@ -715,9 +749,9 @@ export default function ForecastView({
               </div>
 
               <div className="flex justify-between text-[9px] text-slate-500 font-mono mt-1">
-                <span>Lag -24h</span>
-                <span className="text-cyan-400 font-semibold">T-0 (Now)</span>
-                <span>+{forecastHorizon}h</span>
+                <span className="text-left w-1/3">{pastLabel}</span>
+                <span className="text-cyan-400 font-semibold text-center w-1/3">{nowLabel}</span>
+                <span className="text-right w-1/3">{futureLabel}</span>
               </div>
             </div>
           </div>

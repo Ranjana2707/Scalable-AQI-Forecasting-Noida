@@ -92,7 +92,7 @@ export default function DashboardView({ selectedStation, setSelectedStation, pre
         : "";
 
       const icon = L.divIcon({
-        className: "relative flex items-center justify-center",
+        className: "flex items-center justify-center",
         html: `
           <div class="relative flex h-5 w-5 items-center justify-center">
             ${pulseHtml}

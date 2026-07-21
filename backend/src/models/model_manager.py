@@ -75,42 +75,53 @@ class ModelManager:
 
     def get_model(self, name):
         with self.lock:
-            if "HistGradientBoosting" in name:
+            name_lower = name.lower()
+            if "histgradientboosting" in name_lower:
                 key, filename, model_type = "HistGradientBoosting", "hist_gradient_boosting.joblib", "ML"
                 if key not in self.ml_models:
                     self._load_ml_model(key, filename)
                 return self.ml_models[key], model_type
-            elif "Random" in name or "Decision" in name:
+            elif "randomforest" in name_lower or "random forest" in name_lower:
+                key, filename, model_type = "RandomForest", "random_forest.joblib", "ML"
+                if key not in self.ml_models:
+                    self._load_ml_model(key, filename)
+                return self.ml_models[key], model_type
+            elif "lightgbm" in name_lower or "light gradient" in name_lower:
+                key, filename, model_type = "LightGBM", "lightgbm.joblib", "ML"
+                if key not in self.ml_models:
+                    self._load_ml_model(key, filename)
+                return self.ml_models[key], model_type
+            elif "xgboost" in name_lower:
+                key, filename, model_type = "XGBoost", "xgboost.joblib", "ML"
+                if key not in self.ml_models:
+                    self._load_ml_model(key, filename)
+                return self.ml_models[key], model_type
+            elif "decisiontree" in name_lower or "decision tree" in name_lower:
                 key, filename, model_type = "DecisionTree", "decision_tree.joblib", "ML"
                 if key not in self.ml_models:
                     self._load_ml_model(key, filename)
                 return self.ml_models[key], model_type
-            elif "XGBoost" in name or "Gradient" in name:
-                key, filename, model_type = "GradientBoosting", "gradient_boosting.joblib", "ML"
-                if key not in self.ml_models:
-                    self._load_ml_model(key, filename)
-                return self.ml_models[key], model_type
-            elif "Linear" in name:
+            elif "linear" in name_lower:
                 key, filename, model_type = "LinearRegression", "linear_regression.joblib", "ML"
                 if key not in self.ml_models:
                     self._load_ml_model(key, filename)
                 return self.ml_models[key], model_type
-            elif "Ridge" in name:
+            elif "ridge" in name_lower:
                 key, filename, model_type = "RidgeRegression", "ridge_regression.joblib", "ML"
                 if key not in self.ml_models:
                     self._load_ml_model(key, filename)
                 return self.ml_models[key], model_type
-            elif "LSTM" in name and "CNN" not in name:
+            elif "lstm" in name_lower and "cnn" not in name_lower:
                 key, filename, model_type = "LSTM", "lstm_model.pkl", "DL"
                 if key not in self.dl_models:
                     self._load_dl_model(key, filename)
                 return self.dl_models[key], model_type
-            elif "GRU" in name:
+            elif "gru" in name_lower:
                 key, filename, model_type = "GRU", "gru_model.pkl", "DL"
                 if key not in self.dl_models:
                     self._load_dl_model(key, filename)
                 return self.dl_models[key], model_type
-            elif "CNN" in name:
+            elif "cnn" in name_lower:
                 key, filename, model_type = "CNN-LSTM", "cnn_lstm_model.pkl", "DL"
                 if key not in self.dl_models:
                     self._load_dl_model(key, filename)
@@ -120,3 +131,4 @@ class ModelManager:
             if key not in self.ml_models:
                 self._load_ml_model(key, filename)
             return self.ml_models[key], model_type
+

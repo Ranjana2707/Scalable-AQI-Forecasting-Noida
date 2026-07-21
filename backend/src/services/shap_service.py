@@ -43,10 +43,6 @@ class ShapService:
         row = self.update_features(row, pollutants, meteorology, target_date)
         x_single = np.array([row[c] for c in FEAT_COLS])
         
-        cache_key = hash(x_single.tobytes() + str(model_name).encode())
-        if cache_key in self.cache:
-            return self.cache[cache_key]
-            
         model, model_type = self.model_manager.get_model(model_name)
         
         try:
@@ -83,8 +79,9 @@ class ShapService:
             else:
                 from src.explainability.shap_explainer import KernelSHAPExplainer
                 shap_bg = self.dataset_repo.shap_bg
-                explainer = KernelSHAPExplainer(model, shap_bg[:50], feature_names=FEAT_COLS, seed=42)
-                shap_row = explainer.shap_values(x_single.reshape(1, -1), n_coalitions=96)[0]
+                # Use a small coalition size to optimize execution latency while remaining dynamic
+                explainer = KernelSHAPExplainer(model, shap_bg[:30], feature_names=FEAT_COLS, seed=42)
+                shap_row = explainer.shap_values(x_single.reshape(1, -1), n_coalitions=48)[0]
                 base_value = float(explainer.base_value)
         except Exception as e:
             print(f"[ShapService] Exception: {e}")
@@ -144,5 +141,5 @@ class ShapService:
             "baseValue": base_value,
             "features": features_out
         }
-        self.cache[cache_key] = result
         return result
+

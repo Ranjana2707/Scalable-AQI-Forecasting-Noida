@@ -296,12 +296,20 @@ async function fetchCachedData(key: string, path: string, ttlSeconds: number) {
 // Authentication API Endpoints
 // ----------------------------------------------------
 
+let generatedAdminPass: string | null = null;
+const ADMIN_USER = process.env.ADMIN_USER || "admin";
+const ADMIN_PASS = process.env.ADMIN_PASS;
+
+if (!ADMIN_PASS) {
+  generatedAdminPass = crypto.randomBytes(16).toString("hex");
+  console.warn(`[SECURITY WARNING] ADMIN_PASS env variable is not configured. A random administrative token has been generated for login: \n\n    >>> ADMIN PASSWORD: ${generatedAdminPass} <<<\n`);
+}
+
 app.post("/api/v1/auth/login", (req, res) => {
   const { username, password } = req.body;
-  const ADMIN_USER = process.env.ADMIN_USER || "admin";
-  const ADMIN_PASS = process.env.ADMIN_PASS || "noida-aqi-secure-2026";
+  const currentPass = ADMIN_PASS || generatedAdminPass;
   
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
+  if (username === ADMIN_USER && password && password === currentPass) {
     const token = signJwt({ role: "Admin", username }, 3600);
     const refreshToken = signJwt({ role: "Admin", username, type: "refresh" }, 7 * 86400);
     res.setHeader("Set-Cookie", [
