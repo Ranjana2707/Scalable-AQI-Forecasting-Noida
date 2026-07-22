@@ -6,9 +6,23 @@ interface ShapViewProps {
   predictedAqi: number;
   pollutants: { pm25: number; pm10: number; no2: number; so2: number; co: number; o3: number; nh3: number };
   meteorology: { temperature: number; humidity: number; windSpeed: number; rainfall: number };
+  activeModel: string;
+  selectedStation: string;
+  selectedDate: string;
+  selectedTime: string;
+  forecastHorizon: number;
 }
 
-export default function ShapView({ predictedAqi, pollutants, meteorology }: ShapViewProps) {
+export default function ShapView({ 
+  predictedAqi, 
+  pollutants, 
+  meteorology,
+  activeModel,
+  selectedStation,
+  selectedDate,
+  selectedTime,
+  forecastHorizon
+}: ShapViewProps) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiShapText, setAiShapText] = useState<string | null>(null);
   const [serverFeatures, setServerFeatures] = useState<{ name: string; value: number; featureValue: string }[] | null>(null);
@@ -23,7 +37,15 @@ export default function ShapView({ predictedAqi, pollutants, meteorology }: Shap
         const res = await fetch("/api/shap", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pollutants, meteorology })
+          body: JSON.stringify({ 
+            pollutants, 
+            meteorology,
+            modelName: activeModel,
+            stationId: selectedStation,
+            date: selectedDate,
+            time: selectedTime,
+            forecastHorizon
+          })
         });
         const data = await res.json();
         if (active && data.features) {
@@ -35,7 +57,7 @@ export default function ShapView({ predictedAqi, pollutants, meteorology }: Shap
     }
     fetchShap();
     return () => { active = false; };
-  }, [pollutants, meteorology]);
+  }, [pollutants, meteorology, activeModel, selectedStation, selectedDate, selectedTime, forecastHorizon]);
 
   // Derive active feature contributions based on our sliders to feed the Force Plot
   const getForceFeatures = () => {
@@ -239,7 +261,7 @@ export default function ShapView({ predictedAqi, pollutants, meteorology }: Shap
 
               {/* Swarms */}
               <div className="space-y-4">
-                {forceFeatures.map((f, fIdx) => {
+                {GLOBAL_SHAP.map((f, fIdx) => {
                   // Draw simulated beeswarm coordinates
                   // Fine-tune the spread to look like a real SHAP beeswarm
                   const dots = [];
@@ -274,7 +296,7 @@ export default function ShapView({ predictedAqi, pollutants, meteorology }: Shap
                       <div className="relative flex-1 h-8 bg-[#05070A] rounded border border-white/10 overflow-hidden mx-2">
                         <svg className="w-full h-full overflow-visible">
                           {/* Centered zero line */}
-                          <line x1="160" y1="0" x2="160" y2="32" stroke="rgba(255,255,255,0.08)" strokeDashwidth="1" />
+                          <line x1="160" y1="0" x2="160" y2="32" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
                           
                           {/* Dots */}
                           {dots.map((d, dIdx) => (

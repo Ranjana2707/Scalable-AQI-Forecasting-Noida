@@ -13,6 +13,22 @@ interface ForecastViewProps {
   setMeteorology: React.Dispatch<React.SetStateAction<{ temperature: number; humidity: number; windSpeed: number; rainfall: number }>>;
   forecastHorizon: number;
   setForecastHorizon: (val: number) => void;
+  selectedDate: string;
+  setSelectedDate: (val: string) => void;
+  selectedTime: string;
+  setSelectedTime: (val: string) => void;
+  activeModel: string;
+  setActiveModel: (val: string) => void;
+  sensorDrift: boolean;
+  setSensorDrift: (val: boolean) => void;
+  backendLoading: boolean;
+  backendError: boolean;
+  historical: number[];
+  setHistorical: React.Dispatch<React.SetStateAction<number[]>>;
+  forecast: number[];
+  setForecast: React.Dispatch<React.SetStateAction<number[]>>;
+  isLiveTime: boolean;
+  setIsLiveTime: (val: boolean) => void;
 }
 
 export default function ForecastView({
@@ -25,137 +41,70 @@ export default function ForecastView({
   meteorology,
   setMeteorology,
   forecastHorizon,
-  setForecastHorizon
+  setForecastHorizon,
+  selectedDate,
+  setSelectedDate,
+  selectedTime,
+  setSelectedTime,
+  activeModel,
+  setActiveModel,
+  sensorDrift,
+  setSensorDrift,
+  backendLoading,
+  backendError,
+  historical,
+  setHistorical,
+  forecast,
+  setForecast,
+  isLiveTime,
+  setIsLiveTime
 }: ForecastViewProps) {
-  const [activeModel, setActiveModel] = useState("HistGradientBoosting");
-  const [sensorDrift, setSensorDrift] = useState(false);
   const [confidenceInterval, setConfidenceInterval] = useState(true);
-  const [historical, setHistorical] = useState<number[]>([142, 148, 156, 150, 162, 175, 184]);
-  const [forecast, setForecast] = useState<number[]>([190, 195, 204, 210, 220, 230]);
-  const [backendLoading, setBackendLoading] = useState(false);
-  const [backendError, setBackendError] = useState(false);
-
-  // Time & Date State Selection
-  const getLocalDatetimeStrings = () => {
+  const [predictionHistory, setPredictionHistory] = useState<any[]>(() => {
     const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return {
-      date: `${year}-${month}-${day}`,
-      time: `${hours}:${minutes}`
+    const formatOffset = (offsetHours: number) => {
+      const copy = new Date(d.getTime());
+      copy.setHours(copy.getHours() + offsetHours);
+      const y = copy.getFullYear();
+      const m = String(copy.getMonth() + 1).padStart(2, "0");
+      const day = String(copy.getDate()).padStart(2, "0");
+      const h = String(copy.getHours()).padStart(2, "0");
+      const min = String(copy.getMinutes()).padStart(2, "0");
+      return `${y}-${m}-${day} ${h}:${min}`;
     };
-  };
+    return [
+      { id: 1, timestamp: formatOffset(-2), station: "Sector-62, Noida", predictedAqi: 210, category: "Poor", model: "HistGradientBoosting" },
+      { id: 2, timestamp: formatOffset(-8), station: "Sector-1, Noida", predictedAqi: 184, category: "Moderate", model: "HistGradientBoosting" }
+    ];
+  });
 
-  const [isLiveTime, setIsLiveTime] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(() => getLocalDatetimeStrings().date);
-  const [selectedTime, setSelectedTime] = useState(() => getLocalDatetimeStrings().time);
-
-  // Sync with real-time local clock dynamically
-  useEffect(() => {
-    if (!isLiveTime) return;
-    
-    const syncTime = () => {
-      const { date, time } = getLocalDatetimeStrings();
-      setSelectedDate(date);
-      setSelectedTime(time);
-    };
-
-    syncTime();
-    const interval = setInterval(syncTime, 10000); // Sync every 10 seconds
-    return () => clearInterval(interval);
-  }, [isLiveTime]);
-  const [predictionHistory, setPredictionHistory] = useState<any[]>([
-    { id: 1, timestamp: "2026-07-10 18:00", station: "Sector-62, Noida", predictedAqi: 210, category: "Poor", model: "HistGradientBoosting" },
-    { id: 2, timestamp: "2026-07-10 12:00", station: "Sector-1, Noida", predictedAqi: 184, category: "Moderate", model: "HistGradientBoosting" }
-  ]);
-
-  // AI Explanation State
   const [aiLoading, setAiLoading] = useState(false);
   const [aiReport, setAiReport] = useState<{ summary: string; analysis: string; recommendation: string; source: string } | null>(null);
 
-  // Fetch forecast prediction from server when covariates or sliders change
+  // Synchronize local prediction log when predictedAqi changes
   useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-
-    async function fetchForecast() {
-      setBackendLoading(true);
-      setBackendError(false);
-      try {
-        const bodyPollutants = { ...pollutants };
-        if (sensorDrift) {
-          bodyPollutants.pm25 += 25;
-        }
-
-        const res = await fetch("/api/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pollutants: bodyPollutants,
-            meteorology,
-            modelName: activeModel,
-            forecastHorizon,
-            stationId: selectedStation,
-            date: selectedDate,
-            time: selectedTime
-          }),
-          signal: controller.signal
-        });
-        const data = await res.json();
-        if (active) {
-          if (data.predictedAqi !== undefined) {
-            setPredictedAqi(data.predictedAqi);
-            if (data.historical && Array.isArray(data.historical)) {
-              setHistorical(data.historical);
-            }
-            if (data.forecast && Array.isArray(data.forecast)) {
-              setForecast(data.forecast);
-            }
-
-            // Append to history log
-            setPredictionHistory(prev => {
-              const currentStationName = STATIONS.find(s => s.id === selectedStation)?.name || "Sector-62, Noida";
-              const newEntry = {
-                id: Date.now(),
-                timestamp: `${selectedDate} ${selectedTime}`,
-                station: currentStationName,
-                predictedAqi: data.predictedAqi,
-                category: getCategoryTheme(data.predictedAqi).label,
-                model: activeModel
-              };
-              const isDuplicate = prev.some(
-                item => item.timestamp === newEntry.timestamp && 
-                        item.station === newEntry.station && 
-                        item.predictedAqi === newEntry.predictedAqi &&
-                        item.model === newEntry.model
-              );
-              if (isDuplicate) return prev;
-              return [newEntry, ...prev.slice(0, 4)];
-            });
-          } else {
-            setBackendError(true);
-          }
-        }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          console.error("Prediction API fetch failed:", err);
-          if (active) setBackendError(true);
-        }
-      } finally {
-        if (active) setBackendLoading(false);
-      }
+    if (predictedAqi) {
+      const currentStationName = STATIONS.find(s => s.id === selectedStation)?.name || "Sector-62, Noida";
+      const newEntry = {
+        id: Date.now(),
+        timestamp: `${selectedDate} ${selectedTime}`,
+        station: currentStationName,
+        predictedAqi: predictedAqi,
+        category: getCategoryTheme(predictedAqi).label,
+        model: activeModel
+      };
+      setPredictionHistory(prev => {
+        const isDuplicate = prev.some(
+          item => item.timestamp === newEntry.timestamp && 
+                  item.station === newEntry.station && 
+                  item.predictedAqi === newEntry.predictedAqi &&
+                  item.model === newEntry.model
+        );
+        if (isDuplicate) return prev;
+        return [newEntry, ...prev.slice(0, 4)];
+      });
     }
-
-    fetchForecast();
-
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [pollutants, meteorology, activeModel, sensorDrift, forecastHorizon, selectedStation, selectedDate, selectedTime, setPredictedAqi]);
+  }, [predictedAqi, selectedStation, selectedDate, selectedTime, activeModel]);
 
   const getHealthAdvisory = (aqi: number) => {
     if (aqi <= 50) return "Standard outdoor activities can continue safely. Atmospheric conditions pose negligible health risk.";
@@ -234,16 +183,14 @@ export default function ForecastView({
   };
 
   const coords = getCoords();
-  const linePath = coords.map((c, idx) => `${idx === 0 ? "M" : "L"} ${c.x} ${c.y}`).join(" ");
+  const histPath = coords.slice(0, historical.length).map((c, idx) => `${idx === 0 ? "M" : "L"} ${c.x} ${c.y}`).join(" ");
+  const forecastPath = coords.slice(historical.length - 1).map((c, idx) => `${idx === 0 ? "M" : "L"} ${c.x} ${c.y}`).join(" ");
 
   // Create confidence band translucent polygon coordinates
   const confidencePolygon = () => {
     const hLen = historical.length;
-    const widthStep = 480 / (allPoints.length - 1);
-    
-    // Top line of polygon going forward, then bottom line going backward
-    const topPoints = [];
-    const bottomPoints = [];
+    const topPoints: string[] = [];
+    const bottomPoints: string[] = [];
 
     coords.forEach((c, idx) => {
       if (idx < hLen) {
@@ -251,7 +198,7 @@ export default function ForecastView({
         topPoints.push(`${c.x},${c.y}`);
         bottomPoints.unshift(`${c.x},${c.y}`);
       } else {
-        const variance = (idx - hLen + 1) * 12; // growing uncertainty
+        const variance = (idx - hLen + 1) * 8; // growing uncertainty
         topPoints.push(`${c.x},${Math.max(5, c.y - variance)}`);
         bottomPoints.unshift(`${c.x},${Math.min(135, c.y + variance)}`);
       }
@@ -334,16 +281,7 @@ export default function ForecastView({
         </div>
 
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Date</label>
-            <button 
-              onClick={() => setIsLiveTime(!isLiveTime)}
-              className={`text-[8px] font-mono px-1.5 py-0.5 rounded border transition flex items-center gap-1 ${isLiveTime ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" : "bg-slate-800 text-slate-400 border-slate-700"}`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${isLiveTime ? "bg-cyan-400 animate-pulse" : "bg-slate-500"}`} />
-              {isLiveTime ? "Live Clock" : "Manual"}
-            </button>
-          </div>
+          <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Date</label>
           <input
             type="date"
             value={selectedDate}
@@ -356,16 +294,7 @@ export default function ForecastView({
         </div>
 
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Time</label>
-            <button 
-              onClick={() => setIsLiveTime(!isLiveTime)}
-              className={`text-[8px] font-mono px-1.5 py-0.5 rounded border transition flex items-center gap-1 ${isLiveTime ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" : "bg-slate-800 text-slate-400 border-slate-700"}`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${isLiveTime ? "bg-cyan-400 animate-pulse" : "bg-slate-500"}`} />
-              {isLiveTime ? "Live Clock" : "Manual"}
-            </button>
-          </div>
+          <label className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block font-semibold">Simulation Forecast Time</label>
           <input
             type="time"
             value={selectedTime}
@@ -388,9 +317,9 @@ export default function ForecastView({
             <option value="LightGBM">LightGBM</option>
             <option value="XGBoost">XGBoost</option>
             <option value="RandomForest">Random Forest</option>
+            <option value="LSTM">LSTM Recurrent Network</option>
+            <option value="GRU">GRU Gated Recurrent Network</option>
             <option value="CNN-LSTM">CNN-LSTM Hybrid</option>
-            <option value="LSTM">LSTM Sequence Model</option>
-            <option value="GRU">GRU Sequence Model</option>
           </select>
         </div>
       </div>
@@ -618,6 +547,9 @@ export default function ForecastView({
                 onChange={(e) => setForecastHorizon(Number(e.target.value))}
                 className="bg-[#0A0E14] text-white border border-white/10 rounded px-2.5 py-1 text-xs font-mono"
               >
+                <option value={1}>1 Hour</option>
+                <option value={3}>3 Hours</option>
+                <option value={6}>6 Hours</option>
                 <option value={12}>12 Hours</option>
                 <option value={24}>24 Hours</option>
                 <option value={48}>48 Hours</option>
@@ -698,11 +630,11 @@ export default function ForecastView({
 
               <div className="relative w-full h-32">
                 <svg className="w-full h-full overflow-visible">
-                  {/* Confidence Interval Band */}
+                  {/* Confidence Interval Band (Light Blue) */}
                   {confidenceInterval && (
                     <polygon
                       points={confidencePolygon()}
-                      fill="rgba(6, 182, 212, 0.08)"
+                      fill="rgba(56, 189, 248, 0.15)"
                       stroke="none"
                     />
                   )}
@@ -712,39 +644,39 @@ export default function ForecastView({
                   <line x1="10" y1="75" x2="490" y2="75" stroke="rgba(255,255,255,0.04)" strokeDasharray="2,2" />
                   <line x1="10" y1="130" x2="490" y2="130" stroke="rgba(255,255,255,0.04)" strokeDasharray="2,2" />
 
-                  {/* Vertical demarcation */}
-                  <line x1="240" y1="5" x2="240" y2="135" stroke="rgba(6,182,212,0.15)" strokeDasharray="3,3" />
+                  {/* Vertical demarcation (Dashed Vertical Line -> Current Time) */}
+                  <line x1="240" y1="5" x2="240" y2="135" stroke="#38bdf8" strokeDasharray="3,3" />
 
-                  {/* Trend Path */}
+                  {/* Historical Path (Blue) */}
                   <path
-                    d={linePath}
+                    d={histPath}
                     fill="none"
-                    stroke="url(#chart-gradient)"
-                    strokeWidth="2"
+                    stroke="#3b82f6"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                   />
 
-                  {/* Data Point Dots */}
+                  {/* Forecast Path (Orange) */}
+                  <path
+                    d={forecastPath}
+                    fill="none"
+                    stroke="#f97316"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Data Point Dots (Blue for history, Orange for forecast) */}
                   {coords.map((c, idx) => (
                     <circle
                       key={idx}
                       cx={c.x}
                       cy={c.y}
                       r="3.5"
-                      fill={c.isForecast ? catTheme.barColor : "#94a3b8"}
+                      fill={c.isForecast ? "#f97316" : "#3b82f6"}
                       stroke="#020617"
                       strokeWidth="1.5"
                     />
                   ))}
-
-                  {/* Definitions */}
-                  <defs>
-                    <linearGradient id="chart-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#94a3b8" />
-                      <stop offset="50%" stopColor="#22c55e" />
-                      <stop offset="100%" stopColor={catTheme.barColor} />
-                    </linearGradient>
-                  </defs>
                 </svg>
               </div>
 

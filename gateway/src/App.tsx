@@ -36,17 +36,29 @@ export default function App() {
   const [forecastHorizon, setForecastHorizon] = useState<number>(72);
   const [predictedAqi, setPredictedAqi] = useState<number>(184);
   const [aiConnected, setAiConnected] = useState<boolean>(false);
-  const [healthStatus, setHealthStatus] = useState<{
-    connected: boolean;
-    aiEnabled: boolean;
-    modelsLoaded: string[];
-    lastSync: string;
-  }>({
-    connected: false,
-    aiEnabled: false,
-    modelsLoaded: [],
-    lastSync: "--:--:--"
+
+  // Global Time & Date State Selection
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   });
+  const [selectedTime, setSelectedTime] = useState(() => {
+    const d = new Date();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  });
+  const [isLiveTime, setIsLiveTime] = useState(true);
+  const [activeModel, setActiveModel] = useState("HistGradientBoosting");
+  const [sensorDrift, setSensorDrift] = useState(false);
+
+  const [historical, setHistorical] = useState<number[]>([142, 148, 156, 150, 162, 175, 184]);
+  const [forecast, setForecast] = useState<number[]>([190, 195, 204, 210, 220, 230]);
+  const [backendLoading, setBackendLoading] = useState(false);
+  const [backendError, setBackendError] = useState(false);
 
   // Check backend server & Gemini connectivity on initial boot
   useEffect(() => {
@@ -55,56 +67,95 @@ export default function App() {
         const res = await fetch("/api/health");
         const data = await res.json();
         if (data.status === "ok") {
-          setHealthStatus({
-            connected: true,
-            aiEnabled: !!data.aiEnabled,
-            modelsLoaded: data.mlModelsLoaded || [],
-            lastSync: data.lastSync || "Just now"
-          });
-          setAiConnected(!!data.aiEnabled);
+          setAiConnected(data.aiEnabled);
         }
       } catch (err) {
-        console.warn("[SYSTEM] Express server offline.");
-        setHealthStatus({
-          connected: false,
-          aiEnabled: false,
-          modelsLoaded: [],
-          lastSync: "Offline"
-        });
+        console.warn("[SYSTEM] Express server not fully booted or offline. Using high-fidelity client simulation fallback.");
         setAiConnected(false);
       }
     }
     checkBackend();
   }, []);
 
-  // Synchronize predicted AQI for the active station
+  // Auto-update time/date every 10 seconds to match system clock, unless manually edited
+  useEffect(() => {
+    if (!isLiveTime) return;
+
+    const updateTime = () => {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const dateStr = `${year}-${month}-${day}`;
+
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      const timeStr = `${hours}:${minutes}`;
+
+      setSelectedDate(dateStr);
+      setSelectedTime(timeStr);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 10000);
+    return () => clearInterval(interval);
+  }, [isLiveTime]);
+
+  // Unified prediction hook running in the background
   useEffect(() => {
     let active = true;
-    async function fetchActivePrediction() {
+    const controller = new AbortController();
+
+    async function fetchForecast() {
+      setBackendLoading(true);
+      setBackendError(false);
       try {
+        const bodyPollutants = { ...pollutants };
+        if (sensorDrift) {
+          bodyPollutants.pm25 += 25;
+        }
+
         const res = await fetch("/api/predict", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            pollutants,
+            pollutants: bodyPollutants,
             meteorology,
-            modelName: "HistGradientBoosting",
+            modelName: activeModel,
             forecastHorizon,
             stationId: selectedStation,
-            date: new Date().toISOString().split("T")[0]
-          })
+            date: selectedDate,
+            time: selectedTime
+          }),
+          signal: controller.signal
         });
         const data = await res.json();
-        if (active && data && data.predictedAqi !== undefined) {
-          setPredictedAqi(data.predictedAqi);
+        if (active && data) {
+          if (data.predictedAqi !== undefined) {
+            setPredictedAqi(data.predictedAqi);
+            setHistorical(data.historical);
+            setForecast(data.forecast);
+          } else {
+            setBackendError(true);
+          }
         }
-      } catch (err) {
-        console.warn("Failed to sync prediction for selected station", err);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("Prediction API fetch failed:", err);
+          if (active) setBackendError(true);
+        }
+      } finally {
+        if (active) setBackendLoading(false);
       }
     }
-    fetchActivePrediction();
-    return () => { active = false; };
-  }, [selectedStation, pollutants, meteorology, forecastHorizon]);
+
+    fetchForecast();
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [pollutants, meteorology, activeModel, sensorDrift, forecastHorizon, selectedStation, selectedDate, selectedTime]);
 
   // Map tabs to rendering components
   const renderTabContent = () => {
@@ -115,6 +166,13 @@ export default function App() {
             selectedStation={selectedStation}
             setSelectedStation={setSelectedStation}
             predictedAqi={predictedAqi}
+            forecastHorizon={forecastHorizon}
+            setForecastHorizon={setForecastHorizon}
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            activeModel={activeModel}
+            historical={historical}
+            forecast={forecast}
           />
         );
       case "forecast":
@@ -130,6 +188,22 @@ export default function App() {
             setMeteorology={setMeteorology}
             forecastHorizon={forecastHorizon}
             setForecastHorizon={setForecastHorizon}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            selectedTime={selectedTime}
+            setSelectedTime={setSelectedTime}
+            activeModel={activeModel}
+            setActiveModel={setActiveModel}
+            sensorDrift={sensorDrift}
+            setSensorDrift={setSensorDrift}
+            backendLoading={backendLoading}
+            backendError={backendError}
+            historical={historical}
+            setHistorical={setHistorical}
+            forecast={forecast}
+            setForecast={setForecast}
+            isLiveTime={isLiveTime}
+            setIsLiveTime={setIsLiveTime}
           />
         );
       case "eda":
@@ -140,6 +214,11 @@ export default function App() {
             predictedAqi={predictedAqi}
             pollutants={pollutants}
             meteorology={meteorology}
+            activeModel={activeModel}
+            selectedStation={selectedStation}
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            forecastHorizon={forecastHorizon}
           />
         );
       case "ml":
@@ -164,6 +243,13 @@ export default function App() {
             selectedStation={selectedStation}
             setSelectedStation={setSelectedStation}
             predictedAqi={predictedAqi}
+            forecastHorizon={forecastHorizon}
+            setForecastHorizon={setForecastHorizon}
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            activeModel={activeModel}
+            historical={historical}
+            forecast={forecast}
           />
         );
     }
@@ -176,7 +262,6 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         aiConnected={aiConnected}
-        healthStatus={healthStatus}
       />
 
       {/* Main Viewport */}

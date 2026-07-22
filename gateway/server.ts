@@ -920,6 +920,22 @@ app.get("/api/download/:file", async (req, res) => {
   }
 });
 
+// Presentation routes
+app.get("/presentation.md", (_req, res) => {
+  res.setHeader("Content-Type", "text/markdown");
+  res.sendFile(path.join(process.cwd(), "Noida_AQI_XAI_Presentation.md"));
+});
+
+app.get("/presentation.pptx", (_req, res) => {
+  res.setHeader("Content-Disposition", "attachment; filename=Noida_AQI_XAI_Presentation.pptx");
+  res.sendFile(path.join(process.cwd(), "Noida_AQI_XAI_Presentation.pptx"));
+});
+
+app.get("/technical_review.md", (_req, res) => {
+  res.setHeader("Content-Type", "text/markdown");
+  res.sendFile(path.join(process.cwd(), "Noida_AQI_XAI_Technical_Review.md"));
+});
+
 // Start server hosting
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
