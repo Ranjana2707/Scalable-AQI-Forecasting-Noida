@@ -100,41 +100,108 @@ export default function DashboardView({
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<Record<string, L.Marker>>({});
+  const [providerName, setProviderName] = useState<string>("CartoDB Dark Matter");
 
   useEffect(() => {
-    if (!mapRef.current) return;
-    
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapRef.current, {
-        center: [28.55, 77.38],
-        zoom: 10.5,
-        zoomControl: true,
-        attributionControl: false
-      });
-      
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: 'abcd',
-      }).addTo(map);
+    if (!mapRef.current || mapInstanceRef.current) return;
 
-      mapInstanceRef.current = map;
-      setTimeout(() => { map.invalidateSize(); }, 50);
+    const providers = [
+      {
+        name: "CartoDB Dark Matter",
+        url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        options: {
+          maxZoom: 19,
+          subdomains: "abcd",
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+        }
+      },
+      {
+        name: "CartoDB Voyager",
+        url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        options: {
+          maxZoom: 19,
+          subdomains: "abcd",
+          attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        }
+      },
+      {
+        name: "OpenStreetMap Standard",
+        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        options: {
+          maxZoom: 19,
+          subdomains: "abc",
+          attribution: '&copy; OpenStreetMap contributors'
+        }
+      }
+    ];
+
+    let currentProviderIdx = 0;
+    let tileErrorCount = 0;
+
+    const bounds = L.latLngBounds(STATIONS.map(s => [s.lat, s.lng]));
+    
+    const map = L.map(mapRef.current, {
+      center: bounds.getCenter(),
+      zoom: 11,
+      zoomControl: true,
+      attributionControl: true
+    });
+
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+
+    function createTileLayer(idx: number) {
+      const provider = providers[idx];
+      setProviderName(provider.name);
+      
+      const layer = L.tileLayer(provider.url, provider.options);
+      
+      layer.on("tileerror", () => {
+        tileErrorCount++;
+        if (tileErrorCount >= 4 && currentProviderIdx < providers.length - 1) {
+          console.warn(`[Leaflet Map] Tile provider '${provider.name}' failed to load tiles. Switching to fallback provider...`);
+          tileErrorCount = 0;
+          currentProviderIdx++;
+          map.removeLayer(layer);
+          tileLayerRef.current = createTileLayer(currentProviderIdx);
+        }
+      });
+
+      layer.addTo(map);
+      return layer;
     }
 
-    const map = mapInstanceRef.current;
+    tileLayerRef.current = createTileLayer(0);
+    mapInstanceRef.current = map;
+
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
 
     const resizeObserver = new ResizeObserver(() => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize();
       }
     });
-    if (mapRef.current) {
-      resizeObserver.observe(mapRef.current);
-    }
 
-    // Remove existing markers
-    Object.values(markersRef.current).forEach((m: any) => m.remove());
+    resizeObserver.observe(mapRef.current);
+
+    return () => {
+      clearTimeout(timer);
+      resizeObserver.disconnect();
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    Object.values(markersRef.current).forEach(m => m.remove());
     markersRef.current = {};
 
     STATIONS.forEach(station => {
@@ -153,28 +220,28 @@ export default function DashboardView({
         : "";
 
       const icon = L.divIcon({
-        className: "flex items-center justify-center",
+        className: "custom-leaflet-marker",
         html: `
-          <div class="relative flex h-5 w-5 items-center justify-center">
+          <div class="relative flex h-6 w-6 items-center justify-center cursor-pointer">
             ${pulseHtml}
-            <span class="relative inline-flex rounded-full h-3.5 w-3.5 border border-slate-950 shadow-md" style="background-color: ${color}"></span>
+            <span class="relative inline-flex rounded-full h-4 w-4 border-2 border-slate-950 shadow-lg transition-transform duration-200 hover:scale-125" style="background-color: ${color}"></span>
           </div>
         `,
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
       });
 
       const marker = L.marker([station.lat, station.lng], { icon })
         .addTo(map)
         .bindTooltip(`
-          <div style="background-color: #0b0f17; border: 1px solid rgba(255,255,255,0.15); padding: 6px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #fff;">
-            <strong>${station.name}</strong><br/>
-            <span style="color: #22d3ee; font-weight: bold;">AQI: ${aqi}</span>
+          <div style="background-color: #0b0f17; border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 11px; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            <strong style="color: #60a5fa;">${station.name}</strong><br/>
+            <span>AQI Level: <strong style="color: ${color};">${aqi}</strong></span>
           </div>
         `, {
           permanent: false,
           direction: "top",
-          opacity: 0.9
+          opacity: 0.95
         });
 
       marker.on("click", () => {
@@ -183,36 +250,17 @@ export default function DashboardView({
 
       markersRef.current[station.id] = marker;
     });
-
-    const activeStation = STATIONS.find(s => s.id === selectedStation);
-    if (activeStation) {
-      map.setView([activeStation.lat, activeStation.lng], 11);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
   }, [selectedStation, stationStats, setSelectedStation]);
-
-  useEffect(() => {
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, []);
 
   const activeStats = stationStats[selectedStation] || stationStats.sec62;
   const activeStationDetails = STATIONS.find(s => s.id === selectedStation) || STATIONS[0];
 
   const getAqiCategory = (aqi: number) => {
-    if (aqi <= 50) return { label: "Good", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/10", text: "Optimal", description: "Air quality is considered satisfactory, and air pollution poses little or no risk." };
-    if (aqi <= 100) return { label: "Satisfactory", color: "text-green-400", border: "border-green-500/30", bg: "bg-green-500/10", text: "Acceptable", description: "Air quality is acceptable; however, there may be moderate health concerns for some people." };
-    if (aqi <= 200) return { label: "Moderate", color: "text-yellow-400", border: "border-yellow-500/30", bg: "bg-yellow-500/10", text: "Slight Discomfort", description: "Members of sensitive groups may experience health effects." };
-    if (aqi <= 300) return { label: "Poor", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/10", text: "Respiratory Risk", description: "Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects." };
-    if (aqi <= 400) return { label: "Very Poor", color: "text-red-400", border: "border-red-500/30", bg: "bg-red-500/10", text: "Severe Exposure", description: "Health alert: everyone may experience more serious health effects." };
-    return { label: "Severe", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/10", text: "Toxic Hazard", description: "Health warning of emergency conditions. The entire population is more likely to be affected." };
+    if (aqi <= 50) return { label: "Good", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" };
+    if (aqi <= 100) return { label: "Satisfactory", color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/20" };
+    if (aqi <= 200) return { label: "Moderate", color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" };
+    if (aqi <= 300) return { label: "Poor", color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" };
+    return { label: "Severe", color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20" };
   };
 
   const currentCat = getAqiCategory(predictedAqi);
@@ -222,30 +270,31 @@ export default function DashboardView({
   const lowerBound = Math.max(0, predictedAqi - uncertainty);
   const upperBound = predictedAqi + uncertainty;
 
-  // SVG Gauge calculations
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (Math.min(predictedAqi, 400) / 400) * circumference;
-
   return (
     <div className="space-y-6">
-      {/* Top Welcome Panel */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/[0.03] p-5 rounded-2xl border border-white/10 backdrop-blur-md">
-        <div>
-          <span className="text-[10px] font-mono uppercase text-cyan-400 tracking-wider font-semibold">
-            Predictive Atmospheric Analytics Platform
-          </span>
-          <h2 className="text-xl font-display font-bold text-white mt-1">
-            Noida Smart Pollution Cluster Overview
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time multi-station sensor ingestion fused with deep learning temporal predictors.
-          </p>
+      {/* Top Banner Control Bar */}
+      <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+            <Radio className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-white tracking-wide flex items-center gap-2 font-display">
+              NOIDA SPATIAL AIR TELEMETRY NETWORK
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-normal">
+                LIVE HARVEST
+              </span>
+            </h2>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">
+              Multi-Station Continuous Ambient Air Quality Monitoring System (CAAQMS)
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
-          <div className="px-3 py-1.5 rounded-lg bg-[#0A0E14] border border-white/10 flex items-center gap-1.5 text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Calibration: Active
+
+        <div className="flex items-center gap-3 text-xs font-mono">
+          <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 flex items-center gap-2">
+            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Active Model: <strong className="text-white font-semibold">{activeModel}</strong></span>
           </div>
           <div className="px-3 py-1.5 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 font-semibold flex items-center gap-1 shadow-[0_0_10px_rgba(34,211,238,0.1)]">
             <Cpu className="w-3.5 h-3.5" />
@@ -265,12 +314,18 @@ export default function DashboardView({
                 <MapPin className="w-4 h-4 text-cyan-400" />
                 Noida Spatial Cluster Heatgrid
               </h3>
-              <span className="text-[10px] text-white/40 font-mono">Click stations to analyze</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-emerald-400/90 font-mono bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {providerName}
+                </span>
+                <span className="text-[10px] text-white/40 font-mono">Click stations to analyze</span>
+              </div>
             </div>
             
-            {/* Real Leaflet Map */}
-            <div className="relative w-full aspect-video bg-[#0A0E14] border border-white/10 rounded-xl overflow-hidden">
-              <div ref={mapRef} className="w-full h-full" style={{ minHeight: "260px" }} />
+            {/* Real Leaflet Map Container */}
+            <div className="relative w-full aspect-video min-h-[360px] bg-[#0A0E14] border border-white/10 rounded-xl overflow-hidden shadow-inner">
+              <div ref={mapRef} className="w-full h-full min-h-[360px] z-0" />
             </div>
           </div>
 

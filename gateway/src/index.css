@@ -36,12 +36,11 @@ body {
 
 /* Fix Leaflet map tile rendering conflict with Tailwind CSS resets */
 .leaflet-container img.leaflet-tile,
-.leaflet-tile-container img {
+.leaflet-tile-container img,
+.leaflet-image-layer,
+.leaflet-layer {
   max-width: none !important;
   max-height: none !important;
-  width: 256px !important;
-  height: 256px !important;
-  display: block !important;
 }
 
 .leaflet-container {
@@ -49,5 +48,6 @@ body {
   height: 100% !important;
   background-color: #0b0f17 !important;
   z-index: 1;
+  font-family: var(--font-sans);
 }
 
