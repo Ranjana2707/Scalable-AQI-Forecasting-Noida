@@ -936,6 +936,49 @@ app.get("/technical_review.md", (_req, res) => {
   res.sendFile(path.join(process.cwd(), "Noida_AQI_XAI_Technical_Review.md"));
 });
 
+// Local Map Tile Server Route (100% Local / Offline / Firewalled GIS Map Support)
+app.get("/api/map-tiles/:z/:x/:y.png", async (req, res) => {
+  const { z, x, y } = req.params;
+  const tilePath = path.join(process.cwd(), "..", "backend", "data", "tiles", z, x, `${y}.png`);
+  
+  if (fs.existsSync(tilePath)) {
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    return res.sendFile(tilePath);
+  }
+  
+  // Try fetching external CartoDB tile with 1.5s timeout, auto-saving to local disk cache
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1500);
+    const cartoUrl = `https://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`;
+    const response = await fetch(cartoUrl, {
+      signal: controller.signal,
+      headers: { "User-Agent": "Mozilla/5.0" }
+    });
+    clearTimeout(timeout);
+    
+    if (response.ok) {
+      const buffer = Buffer.from(await response.arrayBuffer());
+      fs.mkdirSync(path.dirname(tilePath), { recursive: true });
+      fs.writeFileSync(tilePath, buffer);
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      return res.send(buffer);
+    }
+  } catch (e) {
+    // Timeout or offline - fallback to local dark tile
+  }
+  
+  const defaultTilePath = path.join(process.cwd(), "..", "backend", "data", "tiles", "11", "1463", "951.png");
+  if (fs.existsSync(defaultTilePath)) {
+    res.setHeader("Content-Type", "image/png");
+    return res.sendFile(defaultTilePath);
+  }
+  
+  res.status(404).send("Tile asset unavailable");
+});
+
 // Start server hosting
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {

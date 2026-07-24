@@ -109,17 +109,16 @@ export default function DashboardView({
 
     const providers = [
       {
-        name: "CartoDB Dark Matter",
-        url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        name: "Noida Spatial Network (Local Tile Server)",
+        url: "/api/map-tiles/{z}/{x}/{y}.png",
         options: {
           maxZoom: 19,
-          subdomains: "abcd",
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+          attribution: '&copy; Noida Spatial Air Telemetry &copy; OpenStreetMap'
         }
       },
       {
-        name: "CartoDB Voyager",
-        url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        name: "CartoDB Dark Matter",
+        url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
         options: {
           maxZoom: 19,
           subdomains: "abcd",
