@@ -34,3 +34,20 @@ body {
   background: rgba(148, 163, 184, 0.5);
 }
 
+/* Fix Leaflet map tile rendering conflict with Tailwind CSS resets */
+.leaflet-container img.leaflet-tile,
+.leaflet-tile-container img {
+  max-width: none !important;
+  max-height: none !important;
+  width: 256px !important;
+  height: 256px !important;
+  display: block !important;
+}
+
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #0b0f17 !important;
+  z-index: 1;
+}
+

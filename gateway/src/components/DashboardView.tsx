@@ -119,12 +119,19 @@ export default function DashboardView({
       }).addTo(map);
 
       mapInstanceRef.current = map;
-      // Force Leaflet to re-measure the container after the browser has
-      // finished computing the CSS layout (aspect-video resolves asynchronously).
-      setTimeout(() => { map.invalidateSize(); }, 0);
+      setTimeout(() => { map.invalidateSize(); }, 50);
     }
 
     const map = mapInstanceRef.current;
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+    if (mapRef.current) {
+      resizeObserver.observe(mapRef.current);
+    }
 
     // Remove existing markers
     Object.values(markersRef.current).forEach((m: any) => m.remove());
@@ -181,6 +188,10 @@ export default function DashboardView({
     if (activeStation) {
       map.setView([activeStation.lat, activeStation.lng], 11);
     }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [selectedStation, stationStats, setSelectedStation]);
 
   useEffect(() => {
