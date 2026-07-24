@@ -49,18 +49,12 @@ class PredictService:
             X_seq_in = X_seq_scaled[None, :, :]
             
             yhat, _ = model.forward(X_seq_in)
-            predicted_aqi = float(yhat[0][0]) * 120.26407413108272 + 280.9600678384212
+            predicted_aqi = float(yhat[0][0]) * dl_std[0] + dl_mean[0]
         else:
             x_single = np.array([row[c] for c in FEAT_COLS])
             predicted_aqi = float(model.predict(x_single.reshape(1, -1))[0])
             
-        temp = float(row.get("temperature", 25.0))
-        wind = float(row.get("wind_speed", 10.0))
-        humid = float(row.get("humidity", 50.0))
-        
-        scale_factor = 1.0 + (temp - 25.0) * 0.003 - (wind - 10.0) * 0.005 + (humid - 50.0) * 0.001
-        predicted_aqi = max(15.0, predicted_aqi * scale_factor)
-        return predicted_aqi
+        return max(0.0, predicted_aqi)
 
     def run_prediction(self, req_data):
         pollutants = req_data.get("pollutants", {})

@@ -36,6 +36,7 @@ DL_FEAT_COLS = [
 MODEL_HASHES = {
     "hist_gradient_boosting.joblib": "ed68a22b4844c5fce0e5b4001edf57e5d13423c48456508733f573934b2e6268",
     "random_forest.joblib": "0aff941d16acc852bed39b228802231fbd6a22a0ed8c85a5375aa5505979ae53",
+    "decision_tree.joblib": "a575ba941656f8d42eb6cd21a83a1dafabcfda49fae59f170e94206c1d49ba4a",
     "xgboost.joblib": "3b58b97680ff375226a98950611d66c9fe12a90214e34e02bd8270bc42994874",
     "lightgbm.joblib": "6c92fff2e42c18ee1bf9187e16188cfabf851a1b58601977a062cb4ee92a3a6c",
     "linear_regression.joblib": "d4216d9b7508cdda5ab278d7721f97f0a9f85ef8cbf21684069e909fefb10dc6",

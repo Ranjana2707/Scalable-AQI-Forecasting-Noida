@@ -63,7 +63,7 @@ class ShapService:
                 X_seq_in = X_seq_scaled[None, :, :]
                 
                 yhat, _ = model.forward(X_seq_in)
-                base_pred = float(yhat[0][0]) * 120.26407413108272 + 280.9600678384212
+                base_pred = float(yhat[0][0]) * dl_std[0] + dl_mean[0]
                 
                 shap_row = np.zeros(len(FEAT_COLS))
                 for idx, col in enumerate(FEAT_COLS):
@@ -72,36 +72,19 @@ class ShapService:
                         perturbed_seq = X_seq_in.copy()
                         perturbed_seq[0, 13, dl_idx] += 0.1
                         yhat_p, _ = model.forward(perturbed_seq)
-                        pred_p = float(yhat_p[0][0]) * 120.26407413108272 + 280.9600678384212
+                        pred_p = float(yhat_p[0][0]) * dl_std[0] + dl_mean[0]
                         grad = (pred_p - base_pred) / 0.1
                         shap_row[idx] = grad * 0.15
-                base_value = 105.2
+                base_value = float(dl_mean[0])
             else:
                 from src.explainability.shap_explainer import KernelSHAPExplainer
                 shap_bg = self.dataset_repo.shap_bg
-                # Use a small coalition size to optimize execution latency while remaining dynamic
                 explainer = KernelSHAPExplainer(model, shap_bg[:30], feature_names=FEAT_COLS, seed=42)
                 shap_row = explainer.shap_values(x_single.reshape(1, -1), n_coalitions=48)[0]
                 base_value = float(explainer.base_value)
         except Exception as e:
-            print(f"[ShapService] Exception: {e}")
-            base_value = 105.2
-            shap_row = np.zeros(len(FEAT_COLS))
-            shap_row[FEAT_COLS.index("pm25")] = (pollutants.get("pm25", 80.0) - 120) * 0.45
-            shap_row[FEAT_COLS.index("pm10")] = (pollutants.get("pm10", 120.0) - 180) * 0.12
-            shap_row[FEAT_COLS.index("wind_speed")] = -(meteorology.get("windSpeed", 8.0) - 8.0) * 4.2
-            shap_row[FEAT_COLS.index("humidity")] = (meteorology.get("humidity", 60.0) - 50) * 0.15
-            shap_row[FEAT_COLS.index("temperature")] = -(meteorology.get("temperature", 22.0) - 20) * 0.3
-            shap_row[FEAT_COLS.index("no2")] = (pollutants.get("no2", 40.0) - 45) * 0.25
-            
-        temp_val = float(meteorology.get("temperature", 25.0))
-        wind_val = float(meteorology.get("windSpeed", 10.0))
-        humid_val = float(meteorology.get("humidity", 50.0))
-        
-        shap_row = shap_row * (1.0 + (temp_val - 25.0) * 0.003)
-        shap_row[FEAT_COLS.index("wind_speed")] -= (wind_val - 10.0) * 0.25
-        shap_row[FEAT_COLS.index("humidity")] += (humid_val - 50.0) * 0.05
-        shap_row[FEAT_COLS.index("pm25")] += (float(pollutants.get("pm25", 80)) - 80) * 0.05
+            print(f"[ShapService] Error computing SHAP values: {e}")
+            raise e
         
         features_out = []
         ui_mapping = {

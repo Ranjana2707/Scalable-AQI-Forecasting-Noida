@@ -154,8 +154,8 @@ def create_dashboard_blueprint(predict_service, shap_service, dataset_repo):
                     "outlier_threshold_pm25": round(threshold_pm25, 2)
                 },
                 "missingValues": {
-                    "pm25_missing_pct": 0.0,
-                    "meteorology_missing_pct": 0.0
+                    "pm25_missing_pct": round(float(dataset_repo.features_df["pm25"].isna().mean() * 100), 2),
+                    "meteorology_missing_pct": round(float(dataset_repo.features_df["temperature"].isna().mean() * 100), 2)
                 }
             }
         return jsonify(_eda_cache)
@@ -163,17 +163,21 @@ def create_dashboard_blueprint(predict_service, shap_service, dataset_repo):
     @bp.route("/api/v1/map", methods=["GET"])
     def get_map_pins():
         import src.controllers.shap_controller as sc
-        cache_key = (sc.last_active_station, sc.last_active_date)
-        global _map_cache
-        if cache_key not in _map_cache:
-            row = dataset_repo.get_closest_features(sc.last_active_station, pd.to_datetime(sc.last_active_date))
-            _map_cache[cache_key] = {
-                "stations": [
-                    { "id": "sec62", "lat": 28.6244, "lng": 77.3789, "aqi": float(row["aqi"]), "temp": float(row["temperature"]), "hum": float(row["humidity"]) },
-                    { "id": "sec1", "lat": 28.5844, "lng": 77.3159, "aqi": float(row["aqi"]) * 0.95, "temp": float(row["temperature"]), "hum": float(row["humidity"]) }
-                ]
-            }
-        return jsonify(_map_cache[cache_key])
+        target_dt = pd.to_datetime(sc.last_active_date)
+        
+        row_62 = dataset_repo.get_closest_features("sec62", target_dt)
+        row_1 = dataset_repo.get_closest_features("sec1", target_dt)
+        row_125 = dataset_repo.get_closest_features("sec125", target_dt)
+        row_kp3 = dataset_repo.get_closest_features("kp3", target_dt)
+        
+        return jsonify({
+            "stations": [
+                { "id": "sec62", "lat": 28.6241, "lng": 77.3732, "aqi": float(row_62["aqi"]), "temp": float(row_62["temperature"]), "hum": float(row_62["humidity"]) },
+                { "id": "sec1", "lat": 28.5862, "lng": 77.3094, "aqi": float(row_1["aqi"]), "temp": float(row_1["temperature"]), "hum": float(row_1["humidity"]) },
+                { "id": "sec125", "lat": 28.5456, "lng": 77.3261, "aqi": float(row_125["aqi"]), "temp": float(row_125["temperature"]), "hum": float(row_125["humidity"]) },
+                { "id": "kp3", "lat": 28.4682, "lng": 77.4912, "aqi": float(row_kp3["aqi"]), "temp": float(row_kp3["temperature"]), "hum": float(row_kp3["humidity"]) }
+            ]
+        })
         
     @bp.route("/api/v1/history", methods=["GET"])
     def get_history():

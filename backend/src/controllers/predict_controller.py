@@ -36,33 +36,17 @@ def create_predict_blueprint(predict_service, model_manager):
         sc.last_active_date = date_str
         sc.last_active_time = time_str
         
-        base_payload = req_data.copy()
-        res_list = []
-        horizons = [1, 3, 6, 12, 24, 48, 72]
-        base_res = predict_service.run_prediction(base_payload)
-        base_aqi = base_res["predictedAqi"]
+        res = predict_service.run_prediction(req_data)
+        base_aqi = res["predictedAqi"]
         
-        for h in horizons:
-            h_payload = base_payload.copy()
-            if h >= 24:
-                h_payload["pollutants"] = { "pm25": float(pollutants.get("pm25", 80)) * 0.95 }
-            h_res = predict_service.run_prediction(h_payload)
-            h_aqi = h_res["predictedAqi"]
-            
-            target_hour = (int(time_str.split(":")[0]) + h) % 24
-            diurnal_profile = 1.0
-            if 8 <= target_hour <= 10:
-                diurnal_profile = 1.15
-            elif 18 <= target_hour <= 21:
-                diurnal_profile = 1.25
-            elif 13 <= target_hour <= 15:
-                diurnal_profile = 0.85
-                
-            final_aqi = max(15.0, h_aqi * diurnal_profile)
+        horizons = [1, 3, 6, 12, 24, 48, 72]
+        res_list = []
+        for idx, h in enumerate(horizons):
+            final_aqi = res["forecast"][idx]
             res_list.append({
                 "horizon": f"+{h} hours" if h < 24 else f"+{h//24} days",
                 "aqi": round(final_aqi, 2),
-                "lowerBound": round(final_aqi - (9.2 + h * 0.35), 2),
+                "lowerBound": round(max(0.0, final_aqi - (9.2 + h * 0.35)), 2),
                 "upperBound": round(final_aqi + (9.2 + h * 0.35), 2)
             })
             
@@ -74,14 +58,9 @@ def create_predict_blueprint(predict_service, model_manager):
         }
         predict_service.history_repo.append_log("forecast_history.json", record)
         
-        advisory_res = predict_service.run_prediction({
-            "pollutants": pollutants, "meteorology": meteorology,
-            "modelName": model_name, "stationId": station_id, "date": date_str
-        })
-        
         return jsonify({
             "predictedAqi": base_aqi,
-            "healthAdvisory": advisory_res["healthAdvisory"],
+            "healthAdvisory": res["healthAdvisory"],
             "forecastDetails": res_list
         })
         

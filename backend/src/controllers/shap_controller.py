@@ -26,16 +26,37 @@ def create_shap_blueprint(shap_service, predict_service):
         
     @bp.route("/api/v1/shap/global", methods=["GET"])
     def shap_global():
-        global_importance = [
-            { "feature": "PM2.5", "importance": 45.62 },
-            { "feature": "PM10", "importance": 24.15 },
-            { "feature": "NO2", "importance": 12.80 },
-            { "feature": "Wind Speed", "importance": 18.34 },
-            { "feature": "Humidity", "importance": 9.45 },
-            { "feature": "Temperature", "importance": 7.21 },
-            { "feature": "SO2", "importance": 5.12 },
-            { "feature": "CO", "importance": 4.88 }
-        ]
+        from src.config.app_config import FEAT_COLS
+        import numpy as np
+        model, model_type = shap_service.model_manager.get_model(last_active_model)
+        global_importance = []
+        
+        if hasattr(model, "feature_importances_"):
+            importances = model.feature_importances_
+            total = sum(importances) or 1.0
+            ui_mapping = {
+                "pm25": "PM2.5", "pm10": "PM10", "no2": "NO2", "so2": "SO2", "co": "CO", "o3": "O3",
+                "wind_speed": "Wind Speed", "humidity": "Humidity", "temperature": "Temperature"
+            }
+            items = []
+            for col, imp in zip(FEAT_COLS, importances):
+                displayName = ui_mapping.get(col, col.replace("_", " ").title())
+                items.append({ "feature": displayName, "importance": round(float(imp / total * 100), 2) })
+            items.sort(key=lambda x: x["importance"], reverse=True)
+            global_importance = items[:8]
+        else:
+            shap_bg = shap_service.dataset_repo.shap_bg
+            from src.explainability.shap_explainer import KernelSHAPExplainer
+            explainer = KernelSHAPExplainer(model, shap_bg[:20], feature_names=FEAT_COLS, seed=42)
+            shap_vals = explainer.shap_values(shap_bg[:10], n_coalitions=32)
+            mean_abs = np.mean(np.abs(shap_vals), axis=0)
+            total = sum(mean_abs) or 1.0
+            items = []
+            for col, imp in zip(FEAT_COLS, mean_abs):
+                items.append({ "feature": col.replace("_", " ").title(), "importance": round(float(imp / total * 100), 2) })
+            items.sort(key=lambda x: x["importance"], reverse=True)
+            global_importance = items[:8]
+            
         return jsonify({ "globalFeatureImportance": global_importance })
         
     @bp.route("/api/v1/shap/local", methods=["GET"])
